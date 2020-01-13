@@ -19,7 +19,7 @@ class UsersTableSeeder extends Seeder
         	'last_name' => 'Doe',
         	'gender' => 'Male',
         ];
-        $user->email = 'michaelruther95@gmail.com';
+        $user->email = 'inventoryapp.smtp@gmail.com';
         $user->password = bcrypt('123123');
         $user->save();
 
@@ -34,7 +34,7 @@ class UsersTableSeeder extends Seeder
             'last_name' => 'Doe',
             'gender' => 'Female',
         ];
-        $user->email = 'michaelrutherbatoon@gmail.com';
+        $user->email = 'valeriebantilan@gmail.com';
         $user->password = bcrypt('123123');
         $user->save();
 
