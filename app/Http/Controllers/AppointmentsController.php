@@ -11,7 +11,7 @@ class AppointmentsController extends Controller
 {
     public function create(AppointmentRequest $request){
     	if($request->action == 'create'){
-    		$appointment = Appointment::where('information->appointment_date', '<=', $request->appointment_date)
+    		$appointment = Appointment::where('information->appointment_date', '=', $request->appointment_date)
     						->where('patient_id', $request->patient_id)
     						->first();
     		if($appointment){
