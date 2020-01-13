@@ -49,8 +49,49 @@ const router = new VueRouter({
 			meta: {
 				layout: 'dashboard',
 				authorized_users: ['admin', 'assistant'],
+				page_title: 'Dashboard Home'
 			}
-		}
+		},
+		{
+			path: '/dashboard/user-management',
+			component: require('./pages/dashboard/user-management/index.vue').default,
+			name: 'user_management',
+			meta: {
+				layout: 'dashboard',
+				authorized_users: ['admin'],
+				page_title: 'User Management'
+			}
+		},
+		{
+			path: '/dashboard/patients-list',
+			component: require('./pages/dashboard/patients-list/index.vue').default,
+			name: 'patients_list',
+			meta: {
+				layout: 'dashboard',
+				authorized_users: ['admin', 'assistant'],
+				page_title: 'Patients List'
+			}
+		},
+		{
+			path: '/dashboard/schedules',
+			component: require('./pages/dashboard/schedules/index.vue').default,
+			name: 'schedules',
+			meta: {
+				layout: 'dashboard',
+				authorized_users: ['admin', 'assistant'],
+				page_title: 'Scheduler'
+			}
+		},
+		{
+			path: '/dashboard/inventory',
+			component: require('./pages/dashboard/inventory/index.vue').default,
+			name: 'inventory',
+			meta: {
+				layout: 'dashboard',
+				authorized_users: ['admin', 'assistant'],
+				page_title: 'Inventory'
+			}
+		},
 		// -------------------------------------------------------------------------
 	]
 });

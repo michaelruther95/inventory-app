@@ -8,36 +8,18 @@
 				</button>
 				<div class="collapse navbar-collapse" id="navbarNav">
 					<ul class="navbar-nav">
-						<li class="nav-item pr-2 active">
-							<a class="nav-link" href="#">
-								<small>Home <span class="sr-only">(current)</span></small>
-							</a>
-						</li>
-						<li class="nav-item pr-2">
-							<a class="nav-link" href="#">
-								<small>Account Management</small>
-							</a>
-						</li>
-						<li class="nav-item pr-2">
-							<a class="nav-link" href="#">
-								<small>Patiens List</small>
-							</a>
-						</li>
-						<li class="nav-item pr-2">
-							<a class="nav-link" href="#">
-								<small>Schedule</small>
-							</a>
-						</li>
-						<li class="nav-item pr-2">
-							<a class="nav-link" href="#">
-								<small>Inventory</small>
-							</a>
+						<li class="nav-item pr-2" v-for="navbar_item in navbar_items">
+							<router-link :to="{ name: navbar_item.route_name }" class="nav-link" v-bind:class="{
+								'active': navbar_item.route_name == $route.name
+							}">
+								<small>{{ navbar_item.label }}</small>
+							</router-link>
 						</li>
 					</ul>
 					<ul class="navbar-nav ml-auto"> 
 						<li class="nav-item dropdown">
 							<a href="javascript:void(0)" class="nav-link">
-								<el-dropdown trigger="click">
+								<el-dropdown @command="handleUserNavDropdown">
 									<span class="el-dropdown-link">
 										<small>
 											<i class="el-icon-user"></i> Michael Ruther
@@ -46,7 +28,7 @@
 									<el-dropdown-menu slot="dropdown">
 										<el-dropdown-item>My Profile</el-dropdown-item>
 										<el-dropdown-item>Account Settings</el-dropdown-item>
-										<el-dropdown-item v-on:click="logout()" divided>
+										<el-dropdown-item command="logout" divided>
 											Logout
 										</el-dropdown-item>
 									</el-dropdown-menu>
@@ -70,11 +52,43 @@
 		data(){
 			return {
 				show_profile_modal: false,
-				show_account_settings_modal: false
+				show_account_settings_modal: false,
+
+				navbar_items: [
+					{
+						label: 'Home',
+						route_name: 'dashboard_home'
+					},
+					{
+						label: 'User Management',
+						route_name: 'user_management'
+					},
+					{
+						label: 'Patients List',
+						route_name: 'patients_list'
+					},
+					{
+						label: 'Schedules',
+						route_name: 'schedules'
+					},
+					{
+						label: 'Inventory',
+						route_name: 'inventory'
+					}
+				]
 			}
 		},
 
+		created(){
+			console.log("CURRENT ROUTE: ", this.$route);
+		},
+
 		methods: {
+			handleUserNavDropdown(command){
+				if(command == 'logout'){
+					this.logout();
+				}
+			},
 			logout(){
 				this.$store.dispatch('pageLoader', { display: true, message: 'Logging Out, Please Wait...' });
 

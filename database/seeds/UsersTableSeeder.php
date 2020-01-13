@@ -27,5 +27,20 @@ class UsersTableSeeder extends Seeder
         $userRole->role_id = 1;
         $userRole->user_id = 1;
         $userRole->save();
+
+        $user = new User();
+        $user->profile = [
+            'first_name' => 'Jane',
+            'last_name' => 'Doe',
+            'gender' => 'Female',
+        ];
+        $user->email = 'michaelrutherbatoon@gmail.com';
+        $user->password = bcrypt('123123');
+        $user->save();
+
+        $userRole = new UserRole();
+        $userRole->role_id = 2;
+        $userRole->user_id = 2;
+        $userRole->save();
     }
 }

@@ -14,7 +14,8 @@ class RolesTableSeeder extends Seeder
     {
         $roles = [
         	(object)['name' => 'super-admin', 'display_name' => 'super admin'],
-        	(object)['name' => 'employee', 'display_name' => 'employee']
+        	(object)['name' => 'doctor', 'display_name' => 'doctor'],
+            (object)['name' => 'employee', 'display_name' => 'employee'],
         ];
 
         foreach($roles as $roleItem){

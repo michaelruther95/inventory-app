@@ -18,3 +18,20 @@ h1, h2, h3, h4, h5, h6, label, button, input, textarea, small, p, span, a {
     margin-bottom: 6px !important;
     display: block;
 }
+
+
+// -------------------------------------------------------------
+// ELEMENT UI CUSTOM
+// -------------------------------------------------------------
+.el-loading-mask {
+	z-index: 5000 !important;
+}
+
+.el-table__row .cell {
+	font-size: 14px !important;
+}
+
+.el-date-editor.el-input, .el-date-editor.el-input__inner, .el-select {
+	width: 100% !important;
+}
+// -------------------------------------------------------------

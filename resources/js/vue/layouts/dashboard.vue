@@ -1,9 +1,9 @@
 <template>
 	<div id="dashboard-layout-component">
 		<dashboard-navbar></dashboard-navbar>
-		<div class="mt-5">
+		<div class="pt-5">
 			<div class="pt-5 container">
-				<h5>Dashboard</h5>
+				<h5>{{ $route.meta.page_title }}</h5>
 				<hr>
 				<router-view></router-view>
 			</div>

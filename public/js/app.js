@@ -3566,32 +3566,38 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
       show_profile_modal: false,
-      show_account_settings_modal: false
+      show_account_settings_modal: false,
+      navbar_items: [{
+        label: 'Home',
+        route_name: 'dashboard_home'
+      }, {
+        label: 'User Management',
+        route_name: 'user_management'
+      }, {
+        label: 'Patients List',
+        route_name: 'patients_list'
+      }, {
+        label: 'Schedules',
+        route_name: 'schedules'
+      }, {
+        label: 'Inventory',
+        route_name: 'inventory'
+      }]
     };
   },
+  created: function created() {
+    console.log("CURRENT ROUTE: ", this.$route);
+  },
   methods: {
+    handleUserNavDropdown: function handleUserNavDropdown(command) {
+      if (command == 'logout') {
+        this.logout();
+      }
+    },
     logout: function logout() {
       var _this = this;
 
@@ -3723,19 +3729,67 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
       form: {
         email_address: '',
-        submitting: false
+        action: 'forgot-password'
+      },
+      api_validators: {
+        email_address: '',
+        action: ''
       }
     };
   },
   methods: {
     submit: function submit() {
-      alert("SUBMITTING FORM!");
-      this.form.submitting = true;
+      var _this = this;
+
+      this.$store.dispatch('pageLoader', {
+        display: true,
+        message: 'Sending Reset Link, Please Wait...'
+      });
+      this.clearApiValdators();
+      this.$axios.post('/api/forgot-password', this.form).then(function (response) {
+        _this.$store.dispatch('pageLoader', {
+          display: false,
+          message: ''
+        });
+
+        _this.$message({
+          message: 'Reset link has been successfully sent to your email.',
+          type: 'success'
+        });
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.status == 422) {
+            for (var key in error.response.data.errors) {
+              _this.api_validators[key] = error.response.data.errors[key][0];
+            }
+          }
+        }
+
+        _this.$message({
+          message: 'Something went wrong. Please try again.',
+          type: 'error'
+        });
+
+        _this.$store.dispatch('pageLoader', {
+          display: false,
+          message: ''
+        });
+      });
+    },
+    clearApiValdators: function clearApiValdators() {
+      for (var key in this.api_validators) {
+        this.api_validators[key] = '';
+      }
     }
   }
 });
@@ -3949,6 +4003,568 @@ __webpack_require__.r(__webpack_exports__);
   methods: {
     submit: function submit() {
       this.submitting = true;
+    }
+  }
+});
+
+/***/ }),
+
+/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/vue/pages/dashboard/patients-list/components/patient-form.vue?vue&type=script&lang=js&":
+/*!*********************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/vue/pages/dashboard/patients-list/components/patient-form.vue?vue&type=script&lang=js& ***!
+  \*********************************************************************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+/* harmony default export */ __webpack_exports__["default"] = ({
+  props: ['show_dialog', 'form_title', 'action', 'passed_data'],
+  watch: {
+    show_dialog: function show_dialog(val) {
+      this.dialog_is_visible = val;
+
+      for (var key in this.form) {
+        this.form[key] = '';
+      }
+
+      this.clearApiValidators();
+
+      if (this.action == 'update') {
+        console.log("PASSED DATA: ", this.passed_data);
+
+        for (var _key in this.form) {
+          this.form[_key] = this.passed_data[_key];
+        }
+
+        console.log("UPDATE FORM: ", this.form);
+      }
+    },
+    dialog_is_visible: function dialog_is_visible(val) {
+      if (!val) {
+        this.$emit('after_close', {
+          current_record: this.current_record,
+          action: this.action
+        });
+      }
+    }
+  },
+  data: function data() {
+    return {
+      dialog_is_visible: false,
+      current_record: null,
+      form: {
+        id: '',
+        first_name: '',
+        last_name: '',
+        email_address: '',
+        action: ''
+      },
+      api_validators: {
+        id: '',
+        first_name: '',
+        last_name: '',
+        email_address: '',
+        action: ''
+      }
+    };
+  },
+  methods: {
+    submit: function submit() {
+      var _this = this;
+
+      this.$store.dispatch('pageLoader', {
+        display: true,
+        message: 'Submitting Patient Form, Please Wait...'
+      });
+      this.clearApiValidators();
+      this.form.action = this.action;
+      var api_url = null;
+
+      if (this.action == 'create') {
+        api_url = '/api/create-new-patient';
+      }
+
+      if (this.action == 'update') {
+        api_url = '/api/update-patient';
+      }
+
+      if (api_url != null) {
+        this.$axios.post(api_url, this.form).then(function (response) {
+          _this.current_record = response.data.patient_info;
+          _this.dialog_is_visible = false;
+
+          _this.$store.dispatch('pageLoader', {
+            display: false,
+            message: ''
+          });
+
+          _this.$message({
+            message: 'Patient successfully saved.',
+            type: 'success'
+          });
+        })["catch"](function (error) {
+          if (error.response) {
+            if (error.response.status == 422) {
+              for (var key in error.response.data.errors) {
+                _this.api_validators[key] = error.response.data.errors[key][0];
+              }
+            }
+          }
+
+          _this.$store.dispatch('pageLoader', {
+            display: false,
+            message: ''
+          });
+        });
+      }
+    },
+    clearApiValidators: function clearApiValidators() {
+      for (var key in this.api_validators) {
+        this.api_validators[key] = '';
+      }
+    }
+  }
+});
+
+/***/ }),
+
+/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/vue/pages/dashboard/patients-list/index.vue?vue&type=script&lang=js&":
+/*!***************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/vue/pages/dashboard/patients-list/index.vue?vue&type=script&lang=js& ***!
+  \***************************************************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+/* harmony default export */ __webpack_exports__["default"] = ({
+  components: {
+    'patient-form': __webpack_require__(/*! ./components/patient-form.vue */ "./resources/js/vue/pages/dashboard/patients-list/components/patient-form.vue")["default"],
+    'appointment-form': __webpack_require__(/*! ../schedules/components/set-appointment-form.vue */ "./resources/js/vue/pages/dashboard/schedules/components/set-appointment-form.vue")["default"]
+  },
+  data: function data() {
+    return {
+      open_patient_form: false,
+      patient_form_title: '',
+      action: '',
+      doctors: [],
+      patients: [],
+      table_search: '',
+      selected_record: {},
+      selected_record_index: null,
+      show_removal_confirmation: false,
+      show_appointment_form_modal: false
+    };
+  },
+  created: function created() {
+    var _this = this;
+
+    this.$store.dispatch('pageLoader', {
+      display: true,
+      message: 'Retrieving Patients List, Please Wait...'
+    });
+    this.$axios.get('/api/get-patients', {}).then(function (response) {
+      var raw_patient_list = response.data.patients;
+
+      for (var counter = 0; counter < raw_patient_list.length; counter++) {
+        _this.setPatientToList(raw_patient_list[counter]);
+      }
+
+      var raw_doctors_list = response.data.doctors;
+
+      for (var _counter = 0; _counter < raw_doctors_list.length; _counter++) {
+        var doctor_object = {
+          label: raw_doctors_list[_counter]['profile']['first_name'] + ' ' + raw_doctors_list[_counter]['profile']['last_name'],
+          value: raw_doctors_list[_counter]['id']
+        };
+
+        _this.doctors.push(doctor_object);
+      }
+
+      _this.$store.dispatch('pageLoader', {
+        display: false,
+        message: ''
+      });
+    })["catch"](function (error) {
+      _this.$store.dispatch('pageLoader', {
+        display: false,
+        message: ''
+      });
+    });
+  },
+  methods: {
+    setPatientToList: function setPatientToList(patient_object_parameter) {
+      var patient_object = {
+        'id': patient_object_parameter['id'],
+        'first_name': patient_object_parameter['information']['first_name'],
+        'last_name': patient_object_parameter['information']['last_name'],
+        'email_address': patient_object_parameter['email'],
+        'raw_info': patient_object_parameter
+      };
+      this.patients.push(patient_object);
+    },
+    handlePatientFormOnClose: function handlePatientFormOnClose(params) {
+      if (params.action == 'create' && params.current_record) {
+        this.setPatientToList(params.current_record);
+      }
+
+      if (params.action == 'update' && params.current_record) {
+        for (var counter = 0; counter < this.patients.length; counter++) {
+          if (this.patients[counter]['id'] == params.current_record.id) {
+            var patient_object_parameter = params.current_record;
+            var patient_object = {
+              'id': patient_object_parameter['id'],
+              'first_name': patient_object_parameter['information']['first_name'],
+              'last_name': patient_object_parameter['information']['last_name'],
+              'email_address': patient_object_parameter['email'],
+              'raw_info': patient_object_parameter
+            };
+            this.patients[counter] = patient_object;
+            break;
+          }
+        }
+      }
+
+      this.open_patient_form = false;
+    },
+    handleUpdateRecord: function handleUpdateRecord(action, index, data) {
+      this.selected_record = data;
+      this.selected_record_index = index;
+      this.action = action;
+
+      if (action == 'remove') {
+        this.show_removal_confirmation = true;
+      }
+
+      if (action == 'update') {
+        this.open_patient_form = true;
+        this.patient_form_title = 'Update Patient';
+      }
+
+      if (action == 'view record') {}
+
+      if (action == 'set appointment') {
+        this.show_appointment_form_modal = true;
+      }
+    },
+    handleRecordRemoval: function handleRecordRemoval() {
+      var _this2 = this;
+
+      this.$store.dispatch('pageLoader', {
+        display: true,
+        message: 'Removing Patient From Your Records, Please Wait...'
+      });
+      this.$axios["delete"]('/api/delete-patient', {
+        id: this.selected_record.id
+      }).then(function (response) {
+        _this2.patients.splice(_this2.selected_record_index, 1);
+
+        _this2.show_removal_confirmation = false;
+
+        _this2.$store.dispatch('pageLoader', {
+          display: false,
+          message: ''
+        });
+
+        _this2.$message({
+          message: 'Patient record successfully removed from your record.',
+          type: 'success'
+        });
+      })["catch"](function (error) {
+        _this2.$store.dispatch('pageLoader', {
+          display: false,
+          message: ''
+        });
+      });
+    },
+    handleAppointmentFormOnClose: function handleAppointmentFormOnClose(data) {
+      console.log("DATA AFTER CLOSE ON APPOINTMENT: ", data);
+      this.selected_record = {};
+      this.show_appointment_form_modal = false;
+    }
+  }
+});
+
+/***/ }),
+
+/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/vue/pages/dashboard/schedules/components/set-appointment-form.vue?vue&type=script&lang=js&":
+/*!*************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/vue/pages/dashboard/schedules/components/set-appointment-form.vue?vue&type=script&lang=js& ***!
+  \*************************************************************************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+/* harmony default export */ __webpack_exports__["default"] = ({
+  props: ['action', 'patient_data', 'show_dialog', 'doctors'],
+  watch: {
+    'show_dialog': function show_dialog(val) {
+      this.display_dialog = val;
+      console.log("PATIENT DATA: ", this.patient_data);
+
+      if (val) {
+        for (var key in this.form) {
+          this.form[key] = '';
+        }
+
+        this.clearApiValidators(); // this.getDoctorsList();
+      }
+    }
+  },
+  data: function data() {
+    return {
+      current_section: 1,
+      display_dialog: false,
+      form: {
+        doctor: '',
+        appointment_date: '',
+        appointment_time: '',
+        number_of_pets: '',
+        patient_id: '',
+        action: ''
+      },
+      api_validators: {
+        appointment_date: '',
+        appointment_time: '',
+        number_of_pets: '',
+        patient_id: '',
+        action: ''
+      }
+    };
+  },
+  methods: {
+    // getDoctorsList(){
+    // 	this.$store.dispatch('pageLoader', { display: true, message: 'Fetching Form Resources, Please Wait...' });
+    // 	this.$axios.get('/api/get-users/doctor', {}).then((response) => {
+    // 		for(let counter = 0; counter < response.data.users.length; counter++){
+    // 			let doctor_object = {
+    // 				label: response.data.users[counter]['profile']['first_name'] + ' ' + response.data.users[counter]['profile']['last_name'],
+    // 				value: response.data.users[counter]['id']
+    // 			};
+    // 			this.doctors.push(doctor_object);
+    // 		}
+    // 		this.$store.dispatch('pageLoader', { display: false, message: '' });
+    // 	}).catch((error) => {
+    // 		this.$store.dispatch('pageLoader', { display: false, message: '' });
+    // 	});
+    // },
+    submit: function submit() {
+      var _this = this;
+
+      this.$store.dispatch('pageLoader', {
+        display: true,
+        message: 'Saving Appointment, Please Wait...'
+      });
+      this.clearApiValidators();
+      this.form.patient_id = this.patient_data.id;
+      this.form.action = this.action;
+      this.form.appointment_date = this.$elementHelper.formatDate(this.form.appointment_date);
+      this.$axios.post('/api/save-appointment', this.form).then(function (response) {
+        _this.display_dialog = false;
+
+        _this.$emit('after_close', {
+          'status': true
+        });
+
+        _this.$store.dispatch('pageLoader', {
+          display: false,
+          message: ''
+        });
+
+        _this.$message({
+          message: 'Appointment successfully saved.',
+          type: 'success'
+        });
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.status == 422) {
+            for (var key in error.response.data.errors) {
+              _this.api_validators[key] = error.response.data.errors[key][0];
+            }
+          }
+        }
+
+        _this.$store.dispatch('pageLoader', {
+          display: false,
+          message: ''
+        });
+      });
+    },
+    clearApiValidators: function clearApiValidators() {
+      for (var key in this.api_validators) {
+        this.api_validators[key] = '';
+      }
     }
   }
 });
@@ -66358,7 +66974,31 @@ var render = function() {
               attrs: { id: "navbarNav" }
             },
             [
-              _vm._m(1),
+              _c(
+                "ul",
+                { staticClass: "navbar-nav" },
+                _vm._l(_vm.navbar_items, function(navbar_item) {
+                  return _c(
+                    "li",
+                    { staticClass: "nav-item pr-2" },
+                    [
+                      _c(
+                        "router-link",
+                        {
+                          staticClass: "nav-link",
+                          class: {
+                            active: navbar_item.route_name == _vm.$route.name
+                          },
+                          attrs: { to: { name: navbar_item.route_name } }
+                        },
+                        [_c("small", [_vm._v(_vm._s(navbar_item.label))])]
+                      )
+                    ],
+                    1
+                  )
+                }),
+                0
+              ),
               _vm._v(" "),
               _c("ul", { staticClass: "navbar-nav ml-auto" }, [
                 _c("li", { staticClass: "nav-item dropdown" }, [
@@ -66371,7 +67011,7 @@ var render = function() {
                     [
                       _c(
                         "el-dropdown",
-                        { attrs: { trigger: "click" } },
+                        { on: { command: _vm.handleUserNavDropdown } },
                         [
                           _c("span", { staticClass: "el-dropdown-link" }, [
                             _c("small", [
@@ -66392,14 +67032,7 @@ var render = function() {
                               _vm._v(" "),
                               _c(
                                 "el-dropdown-item",
-                                {
-                                  attrs: { divided: "" },
-                                  on: {
-                                    click: function($event) {
-                                      return _vm.logout()
-                                    }
-                                  }
-                                },
+                                { attrs: { command: "logout", divided: "" } },
                                 [
                                   _vm._v(
                                     "\n\t\t\t\t\t\t\t\t\t\tLogout\n\t\t\t\t\t\t\t\t\t"
@@ -66444,45 +67077,6 @@ var staticRenderFns = [
       },
       [_c("span", { staticClass: "navbar-toggler-icon" })]
     )
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("ul", { staticClass: "navbar-nav" }, [
-      _c("li", { staticClass: "nav-item pr-2 active" }, [
-        _c("a", { staticClass: "nav-link", attrs: { href: "#" } }, [
-          _c("small", [
-            _vm._v("Home "),
-            _c("span", { staticClass: "sr-only" }, [_vm._v("(current)")])
-          ])
-        ])
-      ]),
-      _vm._v(" "),
-      _c("li", { staticClass: "nav-item pr-2" }, [
-        _c("a", { staticClass: "nav-link", attrs: { href: "#" } }, [
-          _c("small", [_vm._v("Account Management")])
-        ])
-      ]),
-      _vm._v(" "),
-      _c("li", { staticClass: "nav-item pr-2" }, [
-        _c("a", { staticClass: "nav-link", attrs: { href: "#" } }, [
-          _c("small", [_vm._v("Patiens List")])
-        ])
-      ]),
-      _vm._v(" "),
-      _c("li", { staticClass: "nav-item pr-2" }, [
-        _c("a", { staticClass: "nav-link", attrs: { href: "#" } }, [
-          _c("small", [_vm._v("Schedule")])
-        ])
-      ]),
-      _vm._v(" "),
-      _c("li", { staticClass: "nav-item pr-2" }, [
-        _c("a", { staticClass: "nav-link", attrs: { href: "#" } }, [
-          _c("small", [_vm._v("Inventory")])
-        ])
-      ])
-    ])
   }
 ]
 render._withStripped = true
@@ -66512,12 +67106,12 @@ var render = function() {
     [
       _c("dashboard-navbar"),
       _vm._v(" "),
-      _c("div", { staticClass: "mt-5" }, [
+      _c("div", { staticClass: "pt-5" }, [
         _c(
           "div",
           { staticClass: "pt-5 container" },
           [
-            _c("h5", [_vm._v("Dashboard")]),
+            _c("h5", [_vm._v(_vm._s(_vm.$route.meta.page_title))]),
             _vm._v(" "),
             _c("hr"),
             _vm._v(" "),
@@ -66622,7 +67216,8 @@ var render = function() {
               attrs: {
                 type: "email",
                 placeholder: "Enter Email Address Here...",
-                size: "small"
+                size: "small",
+                required: ""
               },
               model: {
                 value: _vm.form.email_address,
@@ -66633,42 +67228,51 @@ var render = function() {
               }
             }),
             _vm._v(" "),
-            _c("p", { staticClass: "text-right" }, [
-              _c(
-                "small",
-                [
-                  _c("router-link", { attrs: { to: { name: "login_page" } } }, [
-                    _vm._v("Remembered Your Password?")
-                  ])
-                ],
-                1
-              )
+            _c("p", { staticClass: "text-danger" }, [
+              _c("small", [_vm._v(_vm._s(_vm.api_validators.email_address))])
             ]),
             _vm._v(" "),
-            _c("hr"),
-            _vm._v(" "),
-            _c(
-              "div",
-              { staticClass: "text-right" },
-              [
+            _c("div", { staticClass: "mt-4" }, [
+              _c("hr"),
+              _vm._v(" "),
+              _c("div", { staticClass: "row m-0" }, [
+                _c("div", { staticClass: "col-6 px-0" }, [
+                  _c(
+                    "small",
+                    [
+                      _c(
+                        "router-link",
+                        { attrs: { to: { name: "login_page" } } },
+                        [_vm._v("Remembered Your Password?")]
+                      )
+                    ],
+                    1
+                  )
+                ]),
+                _vm._v(" "),
                 _c(
-                  "el-button",
-                  {
-                    attrs: {
-                      type: "success",
-                      "native-type": "submit",
-                      size: "small",
-                      disabled: _vm.form.submitting
-                    }
-                  },
+                  "div",
+                  { staticClass: "col-6 px-0 text-right" },
                   [
-                    _c("i", { staticClass: "el-icon-check" }),
-                    _vm._v(" Send Reset Link\n\t\t\t\t")
-                  ]
+                    _c(
+                      "el-button",
+                      {
+                        attrs: {
+                          type: "success",
+                          "native-type": "submit",
+                          size: "small"
+                        }
+                      },
+                      [
+                        _c("i", { staticClass: "el-icon-check" }),
+                        _vm._v(" Send Reset Link\n\t\t\t\t\t\t")
+                      ]
+                    )
+                  ],
+                  1
                 )
-              ],
-              1
-            )
+              ])
+            ])
           ],
           1
         )
@@ -67077,6 +67681,808 @@ var staticRenderFns = [
     var _c = _vm._self._c || _h
     return _c("div", { attrs: { id: "dashboard-home-page-component" } }, [
       _c("h1", [_vm._v("dashboard home page component!")])
+    ])
+  }
+]
+render._withStripped = true
+
+
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/vue/pages/dashboard/inventory/index.vue?vue&type=template&id=091d767c&":
+/*!***************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/vue/pages/dashboard/inventory/index.vue?vue&type=template&id=091d767c& ***!
+  \***************************************************************************************************************************************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return staticRenderFns; });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _vm._m(0)
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { attrs: { id: "inventory-page-component" } }, [
+      _c("h1", [_vm._v("inventory")])
+    ])
+  }
+]
+render._withStripped = true
+
+
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/vue/pages/dashboard/patients-list/components/patient-form.vue?vue&type=template&id=5bdd07f6&":
+/*!*************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/vue/pages/dashboard/patients-list/components/patient-form.vue?vue&type=template&id=5bdd07f6& ***!
+  \*************************************************************************************************************************************************************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return staticRenderFns; });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c(
+    "el-dialog",
+    {
+      attrs: {
+        title: _vm.form_title,
+        visible: _vm.dialog_is_visible,
+        "show-close": false,
+        "close-on-click-modal": false,
+        "close-on-press-escape": false,
+        width: "30%"
+      },
+      on: {
+        "update:visible": function($event) {
+          _vm.dialog_is_visible = $event
+        }
+      }
+    },
+    [
+      _c(
+        "form",
+        {
+          on: {
+            submit: function($event) {
+              $event.preventDefault()
+              return _vm.submit()
+            }
+          }
+        },
+        [
+          _c("label", { staticClass: "input-label" }, [
+            _c("small", [_vm._v("First Name")])
+          ]),
+          _vm._v(" "),
+          _c("el-input", {
+            attrs: { placeholder: "Enter First Name Here...", size: "small" },
+            model: {
+              value: _vm.form.first_name,
+              callback: function($$v) {
+                _vm.$set(_vm.form, "first_name", $$v)
+              },
+              expression: "form.first_name"
+            }
+          }),
+          _vm._v(" "),
+          _c("p", { staticClass: "text-danger" }, [
+            _c("small", [_vm._v(_vm._s(_vm.api_validators.first_name))])
+          ]),
+          _vm._v(" "),
+          _c("label", { staticClass: "input-label" }, [
+            _c("small", [_vm._v("Last Name")])
+          ]),
+          _vm._v(" "),
+          _c("el-input", {
+            attrs: { placeholder: "Enter Last Name Here...", size: "small" },
+            model: {
+              value: _vm.form.last_name,
+              callback: function($$v) {
+                _vm.$set(_vm.form, "last_name", $$v)
+              },
+              expression: "form.last_name"
+            }
+          }),
+          _vm._v(" "),
+          _c("p", { staticClass: "text-danger" }, [
+            _c("small", [_vm._v(_vm._s(_vm.api_validators.last_name))])
+          ]),
+          _vm._v(" "),
+          _c("label", { staticClass: "input-label" }, [
+            _c("small", [_vm._v("Email Address")])
+          ]),
+          _vm._v(" "),
+          _c("el-input", {
+            attrs: {
+              type: "email",
+              placeholder: "Enter Email Address Here...",
+              size: "small"
+            },
+            model: {
+              value: _vm.form.email_address,
+              callback: function($$v) {
+                _vm.$set(_vm.form, "email_address", $$v)
+              },
+              expression: "form.email_address"
+            }
+          }),
+          _vm._v(" "),
+          _c("p", { staticClass: "text-danger" }, [
+            _c("small", [_vm._v(_vm._s(_vm.api_validators.email_address))])
+          ]),
+          _vm._v(" "),
+          _c(
+            "div",
+            {
+              staticClass: "dialog-footer text-right mt-5",
+              attrs: { slot: "footer" },
+              slot: "footer"
+            },
+            [
+              _c(
+                "el-button",
+                {
+                  attrs: {
+                    size: "small",
+                    "native-type": "button",
+                    type: "danger"
+                  },
+                  on: {
+                    click: function($event) {
+                      _vm.dialog_is_visible = false
+                      _vm.current_record = null
+                    }
+                  }
+                },
+                [_vm._v("Cancel")]
+              ),
+              _vm._v(" "),
+              _c(
+                "el-button",
+                {
+                  attrs: {
+                    size: "small",
+                    "native-type": "submit",
+                    type: "success"
+                  }
+                },
+                [_vm._v("Submit")]
+              )
+            ],
+            1
+          )
+        ],
+        1
+      )
+    ]
+  )
+}
+var staticRenderFns = []
+render._withStripped = true
+
+
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/vue/pages/dashboard/patients-list/index.vue?vue&type=template&id=fbb3a4ba&":
+/*!*******************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/vue/pages/dashboard/patients-list/index.vue?vue&type=template&id=fbb3a4ba& ***!
+  \*******************************************************************************************************************************************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return staticRenderFns; });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", { attrs: { id: "patients-list-page-component" } }, [
+    _c("div", { staticClass: "row" }, [
+      _c(
+        "div",
+        { staticClass: "col-12" },
+        [
+          _c(
+            "div",
+            { staticClass: " text-right" },
+            [
+              _c(
+                "el-button",
+                {
+                  attrs: { type: "primary", size: "small" },
+                  on: {
+                    click: function($event) {
+                      _vm.open_patient_form = true
+                      _vm.patient_form_title = "Add New Patient"
+                      _vm.action = "create"
+                    }
+                  }
+                },
+                [
+                  _c("i", { staticClass: "el-icon-circle-plus-outline" }),
+                  _vm._v(" New Patient\n\t\t\t\t")
+                ]
+              )
+            ],
+            1
+          ),
+          _vm._v(" "),
+          _c("patient-form", {
+            attrs: {
+              show_dialog: _vm.open_patient_form,
+              form_title: _vm.patient_form_title,
+              action: _vm.action,
+              passed_data: _vm.selected_record
+            },
+            on: {
+              after_close: function($event) {
+                return _vm.handlePatientFormOnClose($event)
+              }
+            }
+          }),
+          _vm._v(" "),
+          _c("appointment-form", {
+            attrs: {
+              patient_data: _vm.selected_record,
+              show_dialog: _vm.show_appointment_form_modal,
+              action: "create",
+              doctors: _vm.doctors
+            },
+            on: {
+              after_close: function($event) {
+                return _vm.handleAppointmentFormOnClose($event)
+              }
+            }
+          })
+        ],
+        1
+      ),
+      _vm._v(" "),
+      _c(
+        "div",
+        { staticClass: "col-12" },
+        [
+          _c("hr"),
+          _vm._v(" "),
+          _c(
+            "el-table",
+            {
+              staticStyle: { width: "100%" },
+              attrs: {
+                data: _vm.patients.filter(function(data) {
+                  return (
+                    !_vm.table_search ||
+                    data.first_name
+                      .toLowerCase()
+                      .includes(_vm.table_search.toLowerCase()) ||
+                      data.last_name
+                        .toLowerCase()
+                        .includes(_vm.table_search.toLowerCase()) ||
+                      data.email_address
+                        .toLowerCase()
+                        .includes(_vm.table_search.toLowerCase())
+                  )
+                })
+              }
+            },
+            [
+              _c("el-table-column", { attrs: { label: "ID #", prop: "id" } }),
+              _vm._v(" "),
+              _c("el-table-column", {
+                attrs: { label: "First Name", prop: "first_name" }
+              }),
+              _vm._v(" "),
+              _c("el-table-column", {
+                attrs: { label: "Last Name", prop: "last_name" }
+              }),
+              _vm._v(" "),
+              _c("el-table-column", {
+                attrs: { label: "Email Address", prop: "email_address" }
+              }),
+              _vm._v(" "),
+              _c("el-table-column", {
+                attrs: { align: "right" },
+                scopedSlots: _vm._u([
+                  {
+                    key: "header",
+                    fn: function(scope) {
+                      return [
+                        _c("el-input", {
+                          attrs: {
+                            size: "mini",
+                            placeholder: "Search Keyword Here..."
+                          },
+                          model: {
+                            value: _vm.table_search,
+                            callback: function($$v) {
+                              _vm.table_search = $$v
+                            },
+                            expression: "table_search"
+                          }
+                        })
+                      ]
+                    }
+                  },
+                  {
+                    key: "default",
+                    fn: function(scope) {
+                      return [
+                        _c(
+                          "el-dropdown",
+                          {
+                            on: {
+                              command: function($event) {
+                                return _vm.handleUpdateRecord(
+                                  $event,
+                                  scope.$index,
+                                  scope.row
+                                )
+                              }
+                            }
+                          },
+                          [
+                            _c("el-button", { attrs: { size: "mini" } }, [
+                              _vm._v("\n\t\t\t\t\t\t\t\tActions "),
+                              _c("i", { staticClass: "el-icon-arrow-down" })
+                            ]),
+                            _vm._v(" "),
+                            _c(
+                              "el-dropdown-menu",
+                              { attrs: { slot: "dropdown" }, slot: "dropdown" },
+                              [
+                                _c(
+                                  "el-dropdown-item",
+                                  {
+                                    attrs: {
+                                      icon: "el-icon-notebook-1",
+                                      command: "set appointment"
+                                    }
+                                  },
+                                  [
+                                    _vm._v(
+                                      "\n\t\t\t\t\t\t\t\t\tSet Appointment\n\t\t\t\t\t\t\t\t"
+                                    )
+                                  ]
+                                ),
+                                _vm._v(" "),
+                                _c(
+                                  "el-dropdown-item",
+                                  {
+                                    attrs: {
+                                      icon: "el-icon-circle-close",
+                                      command: "remove"
+                                    }
+                                  },
+                                  [
+                                    _vm._v(
+                                      "\n\t\t\t\t\t\t\t\t\tRemove\n\t\t\t\t\t\t\t\t"
+                                    )
+                                  ]
+                                ),
+                                _vm._v(" "),
+                                _c(
+                                  "el-dropdown-item",
+                                  {
+                                    attrs: {
+                                      icon: "el-icon-edit",
+                                      command: "update"
+                                    }
+                                  },
+                                  [
+                                    _vm._v(
+                                      "\n\t\t\t\t\t\t\t\t\tUpdate\n\t\t\t\t\t\t\t\t"
+                                    )
+                                  ]
+                                ),
+                                _vm._v(" "),
+                                _c(
+                                  "el-dropdown-item",
+                                  {
+                                    attrs: {
+                                      icon: "el-icon-folder",
+                                      command: "view record"
+                                    }
+                                  },
+                                  [
+                                    _vm._v(
+                                      "\n\t\t\t\t\t\t\t\t\tView Record\n\t\t\t\t\t\t\t\t"
+                                    )
+                                  ]
+                                )
+                              ],
+                              1
+                            )
+                          ],
+                          1
+                        )
+                      ]
+                    }
+                  }
+                ])
+              })
+            ],
+            1
+          ),
+          _vm._v(" "),
+          _c(
+            "el-dialog",
+            {
+              attrs: {
+                title: "Record Removal Confirmation",
+                visible: _vm.show_removal_confirmation,
+                width: "30%",
+                "show-close": false,
+                "close-on-click-modal": false,
+                "close-on-press-escape": false
+              },
+              on: {
+                "update:visible": function($event) {
+                  _vm.show_removal_confirmation = $event
+                }
+              }
+            },
+            [
+              _c("span", [
+                _vm._v(
+                  "\n\t\t\t\t\t\tAre you sure you want to remove your client "
+                ),
+                _c("span", { staticClass: "font-weight-bold" }, [
+                  _vm._v(
+                    _vm._s(_vm.selected_record.first_name) +
+                      " " +
+                      _vm._s(_vm.selected_record.last_name)
+                  )
+                ]),
+                _vm._v(" from your patient records?\n\t\t\t\t\t")
+              ]),
+              _vm._v(" "),
+              _c(
+                "span",
+                {
+                  staticClass: "dialog-footer",
+                  attrs: { slot: "footer" },
+                  slot: "footer"
+                },
+                [
+                  _c(
+                    "el-button",
+                    {
+                      attrs: { size: "small" },
+                      on: {
+                        click: function($event) {
+                          _vm.show_removal_confirmation = false
+                        }
+                      }
+                    },
+                    [_vm._v("No")]
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "el-button",
+                    {
+                      attrs: { size: "small", type: "danger" },
+                      on: {
+                        click: function($event) {
+                          return _vm.handleRecordRemoval()
+                        }
+                      }
+                    },
+                    [_vm._v("Yes")]
+                  )
+                ],
+                1
+              )
+            ]
+          )
+        ],
+        1
+      )
+    ])
+  ])
+}
+var staticRenderFns = []
+render._withStripped = true
+
+
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/vue/pages/dashboard/schedules/components/set-appointment-form.vue?vue&type=template&id=7ee03634&":
+/*!*****************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/vue/pages/dashboard/schedules/components/set-appointment-form.vue?vue&type=template&id=7ee03634& ***!
+  \*****************************************************************************************************************************************************************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return staticRenderFns; });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c(
+    "div",
+    { attrs: { id: "set-appointment-form-component" } },
+    [
+      _c(
+        "el-dialog",
+        {
+          attrs: {
+            title: "Create Appointment",
+            visible: _vm.display_dialog,
+            width: "40%",
+            "close-on-click-modal": false,
+            "close-on-press-escape": false,
+            "show-close": false
+          },
+          on: {
+            "update:visible": function($event) {
+              _vm.display_dialog = $event
+            }
+          }
+        },
+        [
+          _c(
+            "form",
+            {
+              on: {
+                submit: function($event) {
+                  $event.preventDefault()
+                  return _vm.submit()
+                }
+              }
+            },
+            [
+              _c("div", { staticClass: "row m-0" }, [
+                _c(
+                  "div",
+                  { staticClass: "col-12" },
+                  [
+                    _c("label", { staticClass: "input-label" }, [
+                      _c("small", [_vm._v("Doctor")])
+                    ]),
+                    _vm._v(" "),
+                    _c(
+                      "el-select",
+                      {
+                        attrs: { placeholder: "Select", size: "small" },
+                        model: {
+                          value: _vm.form.doctor,
+                          callback: function($$v) {
+                            _vm.$set(_vm.form, "doctor", $$v)
+                          },
+                          expression: "form.doctor"
+                        }
+                      },
+                      _vm._l(_vm.doctors, function(item) {
+                        return _c("el-option", {
+                          key: item.value,
+                          attrs: { label: item.label, value: item.value }
+                        })
+                      }),
+                      1
+                    ),
+                    _vm._v(" "),
+                    _c("p", { staticClass: "text-danger" }, [
+                      _c("small", [_vm._v(_vm._s(_vm.api_validators.doctor))])
+                    ]),
+                    _vm._v(" "),
+                    _c("label", { staticClass: "input-label" }, [
+                      _c("small", [_vm._v("Appointment Date")])
+                    ]),
+                    _vm._v(" "),
+                    _c("el-date-picker", {
+                      attrs: {
+                        type: "date",
+                        placeholder: "Select Date Here...",
+                        size: "small"
+                      },
+                      model: {
+                        value: _vm.form.appointment_date,
+                        callback: function($$v) {
+                          _vm.$set(_vm.form, "appointment_date", $$v)
+                        },
+                        expression: "form.appointment_date"
+                      }
+                    }),
+                    _vm._v(" "),
+                    _c("p", { staticClass: "text-danger" }, [
+                      _c("small", [
+                        _vm._v(_vm._s(_vm.api_validators.appointment_date))
+                      ])
+                    ]),
+                    _vm._v(" "),
+                    _c("label", { staticClass: "input-label" }, [
+                      _c("small", [_vm._v("Appointment Time")])
+                    ]),
+                    _vm._v(" "),
+                    _c("el-time-picker", {
+                      attrs: {
+                        "picker-options": {
+                          selectableRange: "00:00:00 - 23:59:59"
+                        },
+                        size: "small",
+                        placeholder: "Select Time Here...."
+                      },
+                      model: {
+                        value: _vm.form.appointment_time,
+                        callback: function($$v) {
+                          _vm.$set(_vm.form, "appointment_time", $$v)
+                        },
+                        expression: "form.appointment_time"
+                      }
+                    }),
+                    _vm._v(" "),
+                    _c("p", { staticClass: "text-danger" }, [
+                      _c("small", [
+                        _vm._v(_vm._s(_vm.api_validators.appointment_time))
+                      ])
+                    ]),
+                    _vm._v(" "),
+                    _c("label", { staticClass: "input-label" }, [
+                      _c("small", [_vm._v("Number of Pets")])
+                    ]),
+                    _vm._v(" "),
+                    _c("el-input", {
+                      attrs: {
+                        type: "number",
+                        placeholder:
+                          "# of Pets You'll Bring At This Appointment Here...",
+                        size: "small"
+                      },
+                      model: {
+                        value: _vm.form.number_of_pets,
+                        callback: function($$v) {
+                          _vm.$set(_vm.form, "number_of_pets", $$v)
+                        },
+                        expression: "form.number_of_pets"
+                      }
+                    }),
+                    _vm._v(" "),
+                    _c("p", { staticClass: "text-danger" }, [
+                      _c("small", [
+                        _vm._v(_vm._s(_vm.api_validators.number_of_pets))
+                      ])
+                    ])
+                  ],
+                  1
+                )
+              ]),
+              _vm._v(" "),
+              _c(
+                "div",
+                {
+                  staticClass: "dialog-footer text-right mt-5",
+                  attrs: { slot: "footer" },
+                  slot: "footer"
+                },
+                [
+                  _c(
+                    "el-button",
+                    {
+                      attrs: {
+                        size: "small",
+                        "native-type": "button",
+                        type: "danger"
+                      },
+                      on: {
+                        click: function($event) {
+                          _vm.$emit("after_close", { status: false })
+                          _vm.display_dialog = false
+                        }
+                      }
+                    },
+                    [_vm._v("Cancel")]
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "el-button",
+                    {
+                      attrs: {
+                        size: "small",
+                        "native-type": "submit",
+                        type: "success"
+                      }
+                    },
+                    [_vm._v("Submit")]
+                  )
+                ],
+                1
+              )
+            ]
+          )
+        ]
+      )
+    ],
+    1
+  )
+}
+var staticRenderFns = []
+render._withStripped = true
+
+
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/vue/pages/dashboard/schedules/index.vue?vue&type=template&id=4a2997bc&":
+/*!***************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/vue/pages/dashboard/schedules/index.vue?vue&type=template&id=4a2997bc& ***!
+  \***************************************************************************************************************************************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return staticRenderFns; });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _vm._m(0)
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { attrs: { id: "scheduler-page-component" } }, [
+      _c("h1", [_vm._v("scheduler")])
+    ])
+  }
+]
+render._withStripped = true
+
+
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/vue/pages/dashboard/user-management/index.vue?vue&type=template&id=80fcb92a&":
+/*!*********************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/vue/pages/dashboard/user-management/index.vue?vue&type=template&id=80fcb92a& ***!
+  \*********************************************************************************************************************************************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return staticRenderFns; });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _vm._m(0)
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { attrs: { id: "user-management-page-component" } }, [
+      _c("h1", [_vm._v("user management")])
     ])
   }
 ]
@@ -83194,9 +84600,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var element_ui_lib_theme_chalk_index_css__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(element_ui_lib_theme_chalk_index_css__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var element_ui_lib_locale_lang_en__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! element-ui/lib/locale/lang/en */ "./node_modules/element-ui/lib/locale/lang/en.js");
 /* harmony import */ var element_ui_lib_locale_lang_en__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(element_ui_lib_locale_lang_en__WEBPACK_IMPORTED_MODULE_5__);
-/* harmony import */ var _packages_axios_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./packages/_axios.js */ "./resources/js/vue/packages/_axios.js");
-/* harmony import */ var _store_index_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./store/_index.js */ "./resources/js/vue/store/_index.js");
-/* harmony import */ var vuex__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! vuex */ "./node_modules/vuex/dist/vuex.esm.js");
+/* harmony import */ var _packages_element_ui_helper_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./packages/_element-ui-helper.js */ "./resources/js/vue/packages/_element-ui-helper.js");
+/* harmony import */ var _packages_axios_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./packages/_axios.js */ "./resources/js/vue/packages/_axios.js");
+/* harmony import */ var _store_index_js__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./store/_index.js */ "./resources/js/vue/store/_index.js");
+/* harmony import */ var vuex__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! vuex */ "./node_modules/vuex/dist/vuex.esm.js");
 // Main Imports
 // -----------------------------------------------------
 
@@ -83209,23 +84616,25 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(element_ui__WEBPACK_IMPORTED_MODULE_3___default.a, {
   locale: element_ui_lib_locale_lang_en__WEBPACK_IMPORTED_MODULE_5___default.a
-}); // -----------------------------------------------------
+});
+vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(_packages_element_ui_helper_js__WEBPACK_IMPORTED_MODULE_6__["default"]); // -----------------------------------------------------
 // -----------------------------------------------------
 // Axios Custom Package Initiation
 // -----------------------------------------------------
 
 
-vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(_packages_axios_js__WEBPACK_IMPORTED_MODULE_6__["default"]); // -----------------------------------------------------
+vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(_packages_axios_js__WEBPACK_IMPORTED_MODULE_7__["default"]); // -----------------------------------------------------
 // -----------------------------------------------------
 // State Management Initiation
 // -----------------------------------------------------
 
 
 
-vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vuex__WEBPACK_IMPORTED_MODULE_8__["default"]);
-var store = new vuex__WEBPACK_IMPORTED_MODULE_8__["default"].Store(_store_index_js__WEBPACK_IMPORTED_MODULE_7__["default"]); // -----------------------------------------------------
+vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vuex__WEBPACK_IMPORTED_MODULE_9__["default"]);
+var store = new vuex__WEBPACK_IMPORTED_MODULE_9__["default"].Store(_store_index_js__WEBPACK_IMPORTED_MODULE_8__["default"]); // -----------------------------------------------------
 
 _routes_js__WEBPACK_IMPORTED_MODULE_2__["default"].beforeEach(function (to, from, next) {
   console.log("TO INFO: ", to);
@@ -83268,6 +84677,10 @@ _routes_js__WEBPACK_IMPORTED_MODULE_2__["default"].beforeEach(function (to, from
           message: ''
         });
       })["catch"](function (error) {
+        store.dispatch('setToken', null);
+        store.dispatch('setUserInfo', {});
+        localStorage.removeItem('user_info');
+        localStorage.removeItem('token');
         next({
           name: 'login_page'
         });
@@ -83347,7 +84760,44 @@ var router = new vue_router__WEBPACK_IMPORTED_MODULE_0__["default"]({
     name: 'dashboard_home',
     meta: {
       layout: 'dashboard',
-      authorized_users: ['admin', 'assistant']
+      authorized_users: ['admin', 'assistant'],
+      page_title: 'Dashboard Home'
+    }
+  }, {
+    path: '/dashboard/user-management',
+    component: __webpack_require__(/*! ./pages/dashboard/user-management/index.vue */ "./resources/js/vue/pages/dashboard/user-management/index.vue")["default"],
+    name: 'user_management',
+    meta: {
+      layout: 'dashboard',
+      authorized_users: ['admin'],
+      page_title: 'User Management'
+    }
+  }, {
+    path: '/dashboard/patients-list',
+    component: __webpack_require__(/*! ./pages/dashboard/patients-list/index.vue */ "./resources/js/vue/pages/dashboard/patients-list/index.vue")["default"],
+    name: 'patients_list',
+    meta: {
+      layout: 'dashboard',
+      authorized_users: ['admin', 'assistant'],
+      page_title: 'Patients List'
+    }
+  }, {
+    path: '/dashboard/schedules',
+    component: __webpack_require__(/*! ./pages/dashboard/schedules/index.vue */ "./resources/js/vue/pages/dashboard/schedules/index.vue")["default"],
+    name: 'schedules',
+    meta: {
+      layout: 'dashboard',
+      authorized_users: ['admin', 'assistant'],
+      page_title: 'Scheduler'
+    }
+  }, {
+    path: '/dashboard/inventory',
+    component: __webpack_require__(/*! ./pages/dashboard/inventory/index.vue */ "./resources/js/vue/pages/dashboard/inventory/index.vue")["default"],
+    name: 'inventory',
+    meta: {
+      layout: 'dashboard',
+      authorized_users: ['admin', 'assistant'],
+      page_title: 'Inventory'
     }
   } // -------------------------------------------------------------------------
   ]
@@ -83789,6 +85239,39 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./resources/js/vue/packages/_element-ui-helper.js":
+/*!*********************************************************!*\
+  !*** ./resources/js/vue/packages/_element-ui-helper.js ***!
+  \*********************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony default export */ __webpack_exports__["default"] = (function (Vue) {
+  Vue.elementHelper = {
+    formatDate: function formatDate(given_date) {
+      if (given_date) {
+        var raw_date = new Date(given_date);
+        raw_date.setDate(raw_date.getDate() + 1);
+        var date_to_return = new Date(raw_date).toISOString().slice(0, 10);
+        return date_to_return;
+      } else {
+        return given_date;
+      }
+    }
+  };
+  Object.defineProperties(Vue.prototype, {
+    $elementHelper: {
+      get: function get() {
+        return Vue.elementHelper;
+      }
+    }
+  });
+});
+
+/***/ }),
+
 /***/ "./resources/js/vue/pages/auth/forgot-password/index.vue":
 /*!***************************************************************!*\
   !*** ./resources/js/vue/pages/auth/forgot-password/index.vue ***!
@@ -84044,6 +85527,372 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_index_vue_vue_type_template_id_88cab1e2___WEBPACK_IMPORTED_MODULE_0__["render"]; });
 
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_index_vue_vue_type_template_id_88cab1e2___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+
+
+
+/***/ }),
+
+/***/ "./resources/js/vue/pages/dashboard/inventory/index.vue":
+/*!**************************************************************!*\
+  !*** ./resources/js/vue/pages/dashboard/inventory/index.vue ***!
+  \**************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _index_vue_vue_type_template_id_091d767c___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./index.vue?vue&type=template&id=091d767c& */ "./resources/js/vue/pages/dashboard/inventory/index.vue?vue&type=template&id=091d767c&");
+/* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+var script = {}
+
+
+/* normalize component */
+
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_1__["default"])(
+  script,
+  _index_vue_vue_type_template_id_091d767c___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _index_vue_vue_type_template_id_091d767c___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "resources/js/vue/pages/dashboard/inventory/index.vue"
+/* harmony default export */ __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ "./resources/js/vue/pages/dashboard/inventory/index.vue?vue&type=template&id=091d767c&":
+/*!*********************************************************************************************!*\
+  !*** ./resources/js/vue/pages/dashboard/inventory/index.vue?vue&type=template&id=091d767c& ***!
+  \*********************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_index_vue_vue_type_template_id_091d767c___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../../../../node_modules/vue-loader/lib??vue-loader-options!./index.vue?vue&type=template&id=091d767c& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/vue/pages/dashboard/inventory/index.vue?vue&type=template&id=091d767c&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_index_vue_vue_type_template_id_091d767c___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_index_vue_vue_type_template_id_091d767c___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+
+
+
+/***/ }),
+
+/***/ "./resources/js/vue/pages/dashboard/patients-list/components/patient-form.vue":
+/*!************************************************************************************!*\
+  !*** ./resources/js/vue/pages/dashboard/patients-list/components/patient-form.vue ***!
+  \************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _patient_form_vue_vue_type_template_id_5bdd07f6___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./patient-form.vue?vue&type=template&id=5bdd07f6& */ "./resources/js/vue/pages/dashboard/patients-list/components/patient-form.vue?vue&type=template&id=5bdd07f6&");
+/* harmony import */ var _patient_form_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./patient-form.vue?vue&type=script&lang=js& */ "./resources/js/vue/pages/dashboard/patients-list/components/patient-form.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+
+
+
+
+/* normalize component */
+
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
+  _patient_form_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
+  _patient_form_vue_vue_type_template_id_5bdd07f6___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _patient_form_vue_vue_type_template_id_5bdd07f6___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "resources/js/vue/pages/dashboard/patients-list/components/patient-form.vue"
+/* harmony default export */ __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ "./resources/js/vue/pages/dashboard/patients-list/components/patient-form.vue?vue&type=script&lang=js&":
+/*!*************************************************************************************************************!*\
+  !*** ./resources/js/vue/pages/dashboard/patients-list/components/patient-form.vue?vue&type=script&lang=js& ***!
+  \*************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_patient_form_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../../../../node_modules/babel-loader/lib??ref--4-0!../../../../../../../node_modules/vue-loader/lib??vue-loader-options!./patient-form.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/vue/pages/dashboard/patients-list/components/patient-form.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_patient_form_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
+
+/***/ }),
+
+/***/ "./resources/js/vue/pages/dashboard/patients-list/components/patient-form.vue?vue&type=template&id=5bdd07f6&":
+/*!*******************************************************************************************************************!*\
+  !*** ./resources/js/vue/pages/dashboard/patients-list/components/patient-form.vue?vue&type=template&id=5bdd07f6& ***!
+  \*******************************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_patient_form_vue_vue_type_template_id_5bdd07f6___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../../../../../node_modules/vue-loader/lib??vue-loader-options!./patient-form.vue?vue&type=template&id=5bdd07f6& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/vue/pages/dashboard/patients-list/components/patient-form.vue?vue&type=template&id=5bdd07f6&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_patient_form_vue_vue_type_template_id_5bdd07f6___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_patient_form_vue_vue_type_template_id_5bdd07f6___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+
+
+
+/***/ }),
+
+/***/ "./resources/js/vue/pages/dashboard/patients-list/index.vue":
+/*!******************************************************************!*\
+  !*** ./resources/js/vue/pages/dashboard/patients-list/index.vue ***!
+  \******************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _index_vue_vue_type_template_id_fbb3a4ba___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./index.vue?vue&type=template&id=fbb3a4ba& */ "./resources/js/vue/pages/dashboard/patients-list/index.vue?vue&type=template&id=fbb3a4ba&");
+/* harmony import */ var _index_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./index.vue?vue&type=script&lang=js& */ "./resources/js/vue/pages/dashboard/patients-list/index.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+
+
+
+
+/* normalize component */
+
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
+  _index_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
+  _index_vue_vue_type_template_id_fbb3a4ba___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _index_vue_vue_type_template_id_fbb3a4ba___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "resources/js/vue/pages/dashboard/patients-list/index.vue"
+/* harmony default export */ __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ "./resources/js/vue/pages/dashboard/patients-list/index.vue?vue&type=script&lang=js&":
+/*!*******************************************************************************************!*\
+  !*** ./resources/js/vue/pages/dashboard/patients-list/index.vue?vue&type=script&lang=js& ***!
+  \*******************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_index_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../../../node_modules/babel-loader/lib??ref--4-0!../../../../../../node_modules/vue-loader/lib??vue-loader-options!./index.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/vue/pages/dashboard/patients-list/index.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_index_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
+
+/***/ }),
+
+/***/ "./resources/js/vue/pages/dashboard/patients-list/index.vue?vue&type=template&id=fbb3a4ba&":
+/*!*************************************************************************************************!*\
+  !*** ./resources/js/vue/pages/dashboard/patients-list/index.vue?vue&type=template&id=fbb3a4ba& ***!
+  \*************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_index_vue_vue_type_template_id_fbb3a4ba___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../../../../node_modules/vue-loader/lib??vue-loader-options!./index.vue?vue&type=template&id=fbb3a4ba& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/vue/pages/dashboard/patients-list/index.vue?vue&type=template&id=fbb3a4ba&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_index_vue_vue_type_template_id_fbb3a4ba___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_index_vue_vue_type_template_id_fbb3a4ba___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+
+
+
+/***/ }),
+
+/***/ "./resources/js/vue/pages/dashboard/schedules/components/set-appointment-form.vue":
+/*!****************************************************************************************!*\
+  !*** ./resources/js/vue/pages/dashboard/schedules/components/set-appointment-form.vue ***!
+  \****************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _set_appointment_form_vue_vue_type_template_id_7ee03634___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./set-appointment-form.vue?vue&type=template&id=7ee03634& */ "./resources/js/vue/pages/dashboard/schedules/components/set-appointment-form.vue?vue&type=template&id=7ee03634&");
+/* harmony import */ var _set_appointment_form_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./set-appointment-form.vue?vue&type=script&lang=js& */ "./resources/js/vue/pages/dashboard/schedules/components/set-appointment-form.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+
+
+
+
+/* normalize component */
+
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
+  _set_appointment_form_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
+  _set_appointment_form_vue_vue_type_template_id_7ee03634___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _set_appointment_form_vue_vue_type_template_id_7ee03634___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "resources/js/vue/pages/dashboard/schedules/components/set-appointment-form.vue"
+/* harmony default export */ __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ "./resources/js/vue/pages/dashboard/schedules/components/set-appointment-form.vue?vue&type=script&lang=js&":
+/*!*****************************************************************************************************************!*\
+  !*** ./resources/js/vue/pages/dashboard/schedules/components/set-appointment-form.vue?vue&type=script&lang=js& ***!
+  \*****************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_set_appointment_form_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../../../../node_modules/babel-loader/lib??ref--4-0!../../../../../../../node_modules/vue-loader/lib??vue-loader-options!./set-appointment-form.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/vue/pages/dashboard/schedules/components/set-appointment-form.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_set_appointment_form_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
+
+/***/ }),
+
+/***/ "./resources/js/vue/pages/dashboard/schedules/components/set-appointment-form.vue?vue&type=template&id=7ee03634&":
+/*!***********************************************************************************************************************!*\
+  !*** ./resources/js/vue/pages/dashboard/schedules/components/set-appointment-form.vue?vue&type=template&id=7ee03634& ***!
+  \***********************************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_set_appointment_form_vue_vue_type_template_id_7ee03634___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../../../../../node_modules/vue-loader/lib??vue-loader-options!./set-appointment-form.vue?vue&type=template&id=7ee03634& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/vue/pages/dashboard/schedules/components/set-appointment-form.vue?vue&type=template&id=7ee03634&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_set_appointment_form_vue_vue_type_template_id_7ee03634___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_set_appointment_form_vue_vue_type_template_id_7ee03634___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+
+
+
+/***/ }),
+
+/***/ "./resources/js/vue/pages/dashboard/schedules/index.vue":
+/*!**************************************************************!*\
+  !*** ./resources/js/vue/pages/dashboard/schedules/index.vue ***!
+  \**************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _index_vue_vue_type_template_id_4a2997bc___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./index.vue?vue&type=template&id=4a2997bc& */ "./resources/js/vue/pages/dashboard/schedules/index.vue?vue&type=template&id=4a2997bc&");
+/* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+var script = {}
+
+
+/* normalize component */
+
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_1__["default"])(
+  script,
+  _index_vue_vue_type_template_id_4a2997bc___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _index_vue_vue_type_template_id_4a2997bc___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "resources/js/vue/pages/dashboard/schedules/index.vue"
+/* harmony default export */ __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ "./resources/js/vue/pages/dashboard/schedules/index.vue?vue&type=template&id=4a2997bc&":
+/*!*********************************************************************************************!*\
+  !*** ./resources/js/vue/pages/dashboard/schedules/index.vue?vue&type=template&id=4a2997bc& ***!
+  \*********************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_index_vue_vue_type_template_id_4a2997bc___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../../../../node_modules/vue-loader/lib??vue-loader-options!./index.vue?vue&type=template&id=4a2997bc& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/vue/pages/dashboard/schedules/index.vue?vue&type=template&id=4a2997bc&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_index_vue_vue_type_template_id_4a2997bc___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_index_vue_vue_type_template_id_4a2997bc___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+
+
+
+/***/ }),
+
+/***/ "./resources/js/vue/pages/dashboard/user-management/index.vue":
+/*!********************************************************************!*\
+  !*** ./resources/js/vue/pages/dashboard/user-management/index.vue ***!
+  \********************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _index_vue_vue_type_template_id_80fcb92a___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./index.vue?vue&type=template&id=80fcb92a& */ "./resources/js/vue/pages/dashboard/user-management/index.vue?vue&type=template&id=80fcb92a&");
+/* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+var script = {}
+
+
+/* normalize component */
+
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_1__["default"])(
+  script,
+  _index_vue_vue_type_template_id_80fcb92a___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _index_vue_vue_type_template_id_80fcb92a___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "resources/js/vue/pages/dashboard/user-management/index.vue"
+/* harmony default export */ __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ "./resources/js/vue/pages/dashboard/user-management/index.vue?vue&type=template&id=80fcb92a&":
+/*!***************************************************************************************************!*\
+  !*** ./resources/js/vue/pages/dashboard/user-management/index.vue?vue&type=template&id=80fcb92a& ***!
+  \***************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_index_vue_vue_type_template_id_80fcb92a___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../../../../node_modules/vue-loader/lib??vue-loader-options!./index.vue?vue&type=template&id=80fcb92a& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/vue/pages/dashboard/user-management/index.vue?vue&type=template&id=80fcb92a&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_index_vue_vue_type_template_id_80fcb92a___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_index_vue_vue_type_template_id_80fcb92a___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
 
 
 

@@ -28,6 +28,40 @@ use Illuminate\Http\Request;
 
 
 
+// |--------------------------------------------------------------------------
+// | PATIENT ROUTES
+// |--------------------------------------------------------------------------
+	Route::group(['middleware' => ['auth:api']], function (){ 
+		Route::get('get-patients', 'PatientsController@index');
+		Route::post('create-new-patient', 'PatientsController@create');
+		Route::post('update-patient', 'PatientsController@update');
+		Route::delete('delete-patient', 'PatientsController@delete');
+	});
+	
+// |--------------------------------------------------------------------------
+
+
+// |--------------------------------------------------------------------------
+// | APPOINTMENTS ROUTES
+// |--------------------------------------------------------------------------
+	Route::group(['middleware' => ['auth:api']], function (){ 
+		Route::post('save-appointment', 'AppointmentsController@create');
+	});
+// |--------------------------------------------------------------------------
+
+
+// |--------------------------------------------------------------------------
+// | USERS ROUTES
+// |--------------------------------------------------------------------------
+	Route::group(['middleware' => ['auth:api']], function (){ 
+		Route::get('get-users/{type}', 'UsersController@show');
+	});
+// |--------------------------------------------------------------------------
+
+
+
+
+
 // Route::group(['middleware' => ['auth:api']], function (){ 
 	
 // });

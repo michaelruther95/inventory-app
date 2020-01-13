@@ -12,7 +12,9 @@ import Router from './_routes.js';
 import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 import locale from 'element-ui/lib/locale/lang/en';
+import ElementUIHelper from './packages/_element-ui-helper.js';
 Vue.use(ElementUI, { locale });
+Vue.use(ElementUIHelper);
 // -----------------------------------------------------
 
 
@@ -62,6 +64,11 @@ Router.beforeEach(
 					next();
 					store.dispatch('pageLoader', { display: false, message: '' });
 				}).catch((error) => {
+					store.dispatch('setToken', null);
+					store.dispatch('setUserInfo', {});
+					localStorage.removeItem('user_info');
+					localStorage.removeItem('token');
+
 					next({ name: 'login_page' });
 					store.dispatch('pageLoader', { display: false, message: '' });
 				});

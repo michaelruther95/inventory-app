@@ -11387,3 +11387,17 @@ a {
   display: block;
 }
 
+.el-loading-mask {
+  z-index: 5000 !important;
+}
+
+.el-table__row .cell {
+  font-size: 14px !important;
+}
+
+.el-date-editor.el-input,
+.el-date-editor.el-input__inner,
+.el-select {
+  width: 100% !important;
+}
+
