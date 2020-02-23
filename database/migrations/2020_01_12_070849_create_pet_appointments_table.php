@@ -25,6 +25,7 @@ class CreatePetAppointmentsTable extends Migration
                   ->onDelete('cascade');
             $table->longText('information');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

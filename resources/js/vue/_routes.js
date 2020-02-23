@@ -63,19 +63,19 @@ const router = new VueRouter({
 			}
 		},
 		{
-			path: '/dashboard/patients-list',
+			path: '/dashboard/pet-owners-list',
 			component: require('./pages/dashboard/patients-list/index.vue').default,
 			name: 'patients_list',
 			meta: {
 				layout: 'dashboard',
 				authorized_users: ['admin', 'assistant'],
-				page_title: 'Patients List'
+				page_title: 'Pet Owners List'
 			}
 		},
 		{
-			path: '/dashboard/schedules',
-			component: require('./pages/dashboard/schedules/index.vue').default,
-			name: 'schedules',
+			path: '/dashboard/appointments',
+			component: require('./pages/dashboard/appointments/index.vue').default,
+			name: 'appointments',
 			meta: {
 				layout: 'dashboard',
 				authorized_users: ['admin', 'assistant'],

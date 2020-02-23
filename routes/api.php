@@ -41,13 +41,30 @@ use Illuminate\Http\Request;
 // |--------------------------------------------------------------------------
 
 
+
+// |--------------------------------------------------------------------------
+// | PETS ROUTES
+// |--------------------------------------------------------------------------
+	Route::group(['middleware' => ['auth:api']], function (){ 
+		Route::post('create-pet', 'PetsController@create');
+		Route::post('update-pet', 'PetsController@update');
+		Route::post('delete-pet', 'PetsController@delete');
+	});
+// |--------------------------------------------------------------------------
+
+
+
 // |--------------------------------------------------------------------------
 // | APPOINTMENTS ROUTES
 // |--------------------------------------------------------------------------
 	Route::group(['middleware' => ['auth:api']], function (){ 
 		Route::post('save-appointment', 'AppointmentsController@create');
+		Route::get('get-appointments', 'AppointmentsController@index');
+		Route::post('reschedule-appointment', 'AppointmentsController@update');
+		Route::post('cancel-appointment', 'AppointmentsController@delete');
 	});
 // |--------------------------------------------------------------------------
+
 
 
 // |--------------------------------------------------------------------------
@@ -60,12 +77,34 @@ use Illuminate\Http\Request;
 
 
 
+// |--------------------------------------------------------------------------
+// | PRODUCTS ROUTES
+// |--------------------------------------------------------------------------
+	Route::group(['middleware' => ['auth:api']], function (){ 
+		Route::get('get-products', 'ProductsController@show');
+		Route::post('create-new-product', 'ProductsController@create');
+		Route::post('update-product', 'ProductsController@update');
+		Route::post('delete-product', 'ProductsController@delete');
+	});
+// |--------------------------------------------------------------------------
 
 
-// Route::group(['middleware' => ['auth:api']], function (){ 
-	
-// });
 
-// Route::middleware('auth:api')->get('/user', function (Request $request) {
-//     return $request->user();
-// });
+// |--------------------------------------------------------------------------
+// | PRODUCT BATCHES ROUTES
+// |--------------------------------------------------------------------------
+	Route::group(['middleware' => ['auth:api']], function (){
+		Route::post('create-product-batch', 'ProductBatchesController@create');
+		Route::post('update-product-batch', 'ProductBatchesController@update');
+	});
+// |--------------------------------------------------------------------------
+
+
+
+// |--------------------------------------------------------------------------
+// | PRODUCT PURCHASE ROUTES
+// |--------------------------------------------------------------------------
+	Route::group(['middleware' => ['auth:api']], function (){
+		Route::post('create-product-purchase', 'PurchasesController@create');
+	});
+// |--------------------------------------------------------------------------

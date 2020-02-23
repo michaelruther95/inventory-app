@@ -27,15 +27,19 @@ class AppointmentRequest extends FormRequest
         $allowedActions = ['create', 'update', 'cancel'];
         $rules = [
             'action' => 'required|in:'.implode(',', $allowedActions),
-            'doctor' => 'required|numeric|exists:users,id',
-            'appointment_date' => 'required|date|after_or_equal:'.date('Y-m-d'),
-            'appointment_time' => 'required',
-            'number_of_pets' => 'required|numeric|min:1',
-            'patient_id' => 'required|numeric|exists:patients,id',
         ];
 
-        if(Request::input('action') == 'update'){
+        if(Request::input('action') == 'create'){
+            $rules['doctor'] = 'required|numeric|exists:users,id';
+            $rules['appointment_date_time'] = 'required|date_format:Y-m-d H:i:s|after_or_equal:'.date('Y-m-d H:i:s');
+            $rules['patient_id'] = 'required|numeric|exists:patients,id';
+            $rules['selected_pets.*.id'] = 'required|numeric|exists:pets,id';
+            $rules['selected_pets.*.reason'] = 'required';
+        }
 
+        if(Request::input('action') == 'update'){
+            $rules['appointment_date_time'] = 'required|date_format:Y-m-d H:i:s|after_or_equal:'.date('Y-m-d H:i:s');
+            $rules['record_id'] = 'required|numeric|exists:appointments,id';
         }
 
         return $rules;

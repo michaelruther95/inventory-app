@@ -17,6 +17,7 @@ class CreateProductsTable extends Migration
             $table->bigIncrements('id');
             $table->longText('information');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

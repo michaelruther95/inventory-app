@@ -20,6 +20,14 @@
 			<el-input type="email" placeholder="Enter Email Address Here..." size="small" v-model="form.email_address"></el-input>
 			<p class="text-danger"><small>{{ api_validators.email_address }}</small></p>
 
+			<label class="input-label"><small>Phone Number</small></label>
+			<el-input type="text" v-mask="'09#########'" placeholder="Enter Phone Number Here..." size="small" v-model="form.phone_number"></el-input>
+			<p class="text-danger"><small>{{ api_validators.phone_number }}</small></p>
+
+			<label class="input-label"><small>Address</small></label>
+			<el-input type="text" placeholder="Enter Address Here..." size="small" v-model="form.address"></el-input>
+			<p class="text-danger"><small>{{ api_validators.address }}</small></p>
+
 		  	<div slot="footer" class="dialog-footer text-right mt-5">
 		    	<el-button size="small" native-type="button" type="danger" v-on:click="dialog_is_visible = false; current_record = null;">Cancel</el-button>
 		    	<el-button size="small" native-type="submit" type="success">Submit</el-button>
@@ -43,8 +51,10 @@
 				if(this.action == 'update'){
 					console.log("PASSED DATA: ", this.passed_data);
 					for(let key in this.form){
-						this.form[key] = this.passed_data[key];
+						this.form[key] = this.passed_data['raw_info']['information'][key];
 					}
+
+					this.form['id'] = this.passed_data['id'];
 
 					console.log("UPDATE FORM: ", this.form);
 				}
@@ -65,6 +75,8 @@
 					first_name: '',
 					last_name: '',
 					email_address: '',
+					phone_number: '',
+					address: '',
 					action: ''
 				},
 
@@ -73,6 +85,8 @@
 					first_name: '',
 					last_name: '',
 					email_address: '',
+					phone_number: '',
+					address: '',
 					action: ''
 				},
 			}

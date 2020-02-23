@@ -11,9 +11,9 @@ use App\Http\Requests\PatientRequest;
 class PatientsController extends Controller
 {
     public function index(Request $request){
-    	$patients = Patient::get();
+    	$patients = Patient::with('pets.petAppointments.appointmentInfo.doctor', 'appointments.petAppointments.petInfo', 'appointments.doctor')->get();
         $doctors = User::with('userRole')->whereHas('userRole', function($query) {
-            $query->where('role_id', 2); // 2 = id of the role named 'doctor'
+            $query->where('role_id', 1); // 2 = id of the role named 'doctor'
         })->get();
 
     	return response()->json([
@@ -31,8 +31,14 @@ class PatientsController extends Controller
     		'first_name' => $request->first_name,
     		'last_name' => $request->last_name,
     		'email_address' => $request->email_address,
+            'phone_number' => $request->phone_number,
+            'address' => $request->address,
     	];
     	$patient->save();
+
+        $patient = Patient::with('pets.petAppointments.appointmentInfo.doctor', 'appointments.petAppointments.petInfo', 'appointments.doctor')
+                    ->where('id', $patient->id)
+                    ->first();
 
     	return response()->json([
     		'action' => 'create-patient',
@@ -47,8 +53,14 @@ class PatientsController extends Controller
     		'first_name' => $request->first_name,
     		'last_name' => $request->last_name,
     		'email_address' => $request->email_address,
+            'phone_number' => $request->phone_number,
+            'address' => $request->address,
     	];
     	$patient->save();
+
+        $patient = Patient::with('pets.petAppointments.appointmentInfo.doctor', 'appointments.petAppointments.petInfo', 'appointments.doctor')
+                    ->where('id', $patient->id)
+                    ->first();
 
     	return response()->json([
     		'action' => 'update',

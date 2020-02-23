@@ -7,6 +7,14 @@ import Router from './_routes.js';
 
 
 // -----------------------------------------------------
+// V-Mask Package Import
+// -----------------------------------------------------
+import VueMask from 'v-mask';
+Vue.use(VueMask);
+// -----------------------------------------------------
+
+
+// -----------------------------------------------------
 // Element UI Initiation
 // -----------------------------------------------------
 import ElementUI from 'element-ui';
@@ -23,6 +31,22 @@ Vue.use(ElementUIHelper);
 // -----------------------------------------------------
 import AxiosPackage from './packages/_axios.js';
 Vue.use(AxiosPackage);
+// -----------------------------------------------------
+
+
+// -----------------------------------------------------
+// Vue Moment Package Initiation
+// -----------------------------------------------------
+import VueMoment from 'vue-moment';
+Vue.use(VueMoment);
+// -----------------------------------------------------
+
+
+// -----------------------------------------------------
+// Vue2 Filter Package Initiation
+// -----------------------------------------------------
+import Vue2Filters from 'vue2-filters';
+Vue.use(Vue2Filters);
 // -----------------------------------------------------
 
 
@@ -48,7 +72,7 @@ Router.beforeEach(
 			else{
 				next();
 			}
-			store.dispatch('pageLoader', { display: false, message: '' });
+			// store.dispatch('pageLoader', { display: false, message: '' });
 		}
 		else{
 			console.log("STORE GETTERS: ", store.getters);
@@ -56,13 +80,13 @@ Router.beforeEach(
 			if(!store.getters.authToken){
 				console.log("NO TOKEN FOUND!");
 				next({ name: 'login_page' });
-				store.dispatch('pageLoader', { display: false, message: '' });
+				// store.dispatch('pageLoader', { display: false, message: '' });
 			}
 			else{
 				console.log("TOKEN FOUND!");
 				Vue.axios.get('/api/fetch-auth-info', {}).then((response) => {
 					next();
-					store.dispatch('pageLoader', { display: false, message: '' });
+					// store.dispatch('pageLoader', { display: false, message: '' });
 				}).catch((error) => {
 					store.dispatch('setToken', null);
 					store.dispatch('setUserInfo', {});
@@ -70,7 +94,7 @@ Router.beforeEach(
 					localStorage.removeItem('token');
 
 					next({ name: 'login_page' });
-					store.dispatch('pageLoader', { display: false, message: '' });
+					// store.dispatch('pageLoader', { display: false, message: '' });
 				});
 			}
 		}

@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
 
-class PatientRequest extends FormRequest
+class ProductBatchRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,22 +25,20 @@ class PatientRequest extends FormRequest
     public function rules()
     {
         $allowedActions = ['create', 'update'];
+
         $rules = [
-            'first_name' => 'required',
-            'last_name' => 'required',
-            'email_address' => 'required|email|unique:patients,email',
-            'phone_number' => 'required|min:11',
-            'address' => 'required',
-            'action' => 'required|in:'.implode(',', $allowedActions)
+            'action' => 'required|in:'.implode(',', $allowedActions),
+            'product_id' => 'required|exists:products,id',
+            'number_of_stocks' => 'required|numeric',
+            'expiration_date' => 'required|date|after_or_equal:'.date('Y-m-d'),
+            'supplier' => 'required',
+            'delivery_date' => 'required|date|before_or_equal:'.date('Y-m-d')
         ];
 
-        // dd(Request::input('id'));
-
         if(Request::input('action') == 'update'){
-            $rules['id'] = 'required|exists:patients';
-            $rules['email_address'] = 'required|email|unique:patients,email,'.Request::input('id');
+            $rules['id'] = 'required|numeric|exists:product_batches,id';
         }
-        
+
         return $rules;
     }
 }

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateAppointmentsTable extends Migration
+class CreatePurchasesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,24 +13,22 @@ class CreateAppointmentsTable extends Migration
      */
     public function up()
     {
-        Schema::create('appointments', function (Blueprint $table) {
+        Schema::create('purchases', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->unsignedBigInteger('doctor_id');
-            $table->foreign('doctor_id')
-                  ->references('id')->on('users')
-                  ->onDelete('cascade');
-            $table->unsignedBigInteger('patient_id');
-            $table->foreign('patient_id')
-                  ->references('id')->on('patients')
-                  ->onDelete('cascade');
             $table->unsignedBigInteger('creator_id');
             $table->foreign('creator_id')
                   ->references('id')->on('users')
                   ->onDelete('cascade');
+            $table->unsignedBigInteger('product_id');
+            $table->foreign('product_id')
+                  ->references('id')->on('products')
+                  ->onDelete('cascade');
+            $table->unsignedBigInteger('product_batch_id');
+            $table->foreign('product_batch_id')
+                  ->references('id')->on('product_batches')
+                  ->onDelete('cascade');
             $table->longText('information');
-            $table->string('status')->default('pending');
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 
@@ -41,6 +39,6 @@ class CreateAppointmentsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('appointments');
+        Schema::dropIfExists('purchases');
     }
 }

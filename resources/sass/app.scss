@@ -14,9 +14,56 @@ h1, h2, h3, h4, h5, h6, label, button, input, textarea, small, p, span, a {
 	letter-spacing: 1px !important;
 }
 
+strong {
+	font-weight: 600 !important;
+}
+
 .input-label {
     margin-bottom: 6px !important;
     display: block;
+}
+
+.bg-opacity-danger {
+	background-color: #dc35454a !important;
+	transition: all 0.5s ease !important;
+}
+.bg-opacity-danger:hover {
+	background-color: #dc354575 !important;
+	transition: all 0.5s ease !important;
+}
+
+.bg-opacity-warning {
+	background-color: #dca9354a !important;
+	transition: all 0.5s ease !important;
+}
+.bg-opacity-warning:hover {
+	background-color: #dca93575 !important;
+	transition: all 0.5s ease !important;
+}
+
+.bg-opacity-success {
+	background-color: #35dc424a !important;
+	transition: all 0.5s ease !important;
+}
+.bg-opacity-success:hover {
+	background-color: #35dc426e !important;
+	transition: all 0.5s ease !important;
+}
+
+.bg-opacity-dark {
+	background-color: #423c2f4a !important;
+	color: white !important;
+	transition: all 0.5s ease !important;
+}
+.bg-opacity-dark:hover {
+	background-color: #423c2f7d !important;
+	color: white !important;
+	transition: all 0.5s ease !important;
+}
+
+
+.el-table__body tr.nullify-el-hover > td {
+	background-color: unset !important;
 }
 
 
@@ -25,6 +72,8 @@ h1, h2, h3, h4, h5, h6, label, button, input, textarea, small, p, span, a {
 // -------------------------------------------------------------
 .el-loading-mask {
 	z-index: 5000 !important;
+	position: fixed !important;
+	height: 100vh !important;
 }
 
 .el-table__row .cell {

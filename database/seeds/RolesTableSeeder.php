@@ -13,7 +13,7 @@ class RolesTableSeeder extends Seeder
     public function run()
     {
         $roles = [
-        	(object)['name' => 'super-admin', 'display_name' => 'super admin'],
+        	// (object)['name' => 'super-admin', 'display_name' => 'super admin'],
         	(object)['name' => 'doctor', 'display_name' => 'doctor'],
             (object)['name' => 'employee', 'display_name' => 'employee'],
         ];

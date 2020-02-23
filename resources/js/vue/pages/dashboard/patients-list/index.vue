@@ -3,14 +3,15 @@
 		<div class="row">
 			<div class="col-12">
 				<div class=" text-right">
-					<el-button type="primary" size="small" v-on:click="open_patient_form = true; patient_form_title = 'Add New Patient'; action = 'create'">
-						<i class="el-icon-circle-plus-outline"></i> New Patient
+					<el-button type="primary" size="small" v-on:click="open_patient_form = true; patient_form_title = 'Add New Pet Owner'; action = 'create'">
+						<i class="el-icon-circle-plus-outline"></i> Add New Owner
 					</el-button>
 				</div>
 				<patient-form :show_dialog="open_patient_form" :form_title="patient_form_title" v-on:after_close="handlePatientFormOnClose($event)" :action="action" :passed_data="selected_record"></patient-form>
 
 				<appointment-form 
-					v-on:after_close="handleAppointmentFormOnClose($event)" 
+					v-on:after_close="handleAppointmentFormOnClose($event)"
+					v-on:receive_pet="handleNewPet($event)" 
 					:patient_data="selected_record"
 					:show_dialog="show_appointment_form_modal"
 					:action="'create'"
@@ -84,9 +85,23 @@
 							Are you sure you want to remove your client <span class="font-weight-bold">{{ selected_record.first_name }} {{ selected_record.last_name }}</span> from your patient records?
 						</span>
 						<span slot="footer" class="dialog-footer">
-					<el-button size="small" v-on:click="show_removal_confirmation = false">No</el-button>
-					<el-button size="small" type="danger" v-on:click="handleRecordRemoval()">Yes</el-button>
-				</span>
+							<el-button size="small" v-on:click="show_removal_confirmation = false">No</el-button>
+							<el-button size="small" type="danger" v-on:click="handleRecordRemoval()">Yes</el-button>
+						</span>
+				</el-dialog>
+
+				<el-dialog 
+					title="Record Information" 
+					:visible.sync="show_record_modal" 
+					width="70%" 
+					:show-close="false" 
+					:close-on-click-modal="false" 
+					:close-on-press-escape="false"
+				>
+					<record-info :record="selected_record" v-if="show_record_modal" v-on:updatedrecord="handleUpdatedRecord($event)"></record-info>
+					<span slot="footer" class="dialog-footer">
+						<el-button size="small" type="danger" v-on:click="show_record_modal = false">Close</el-button>
+					</span>
 				</el-dialog>
 			</div>
 		</div>
@@ -96,7 +111,8 @@
 	export default {
 		components: {
 			'patient-form': require('./components/patient-form.vue').default,
-			'appointment-form': require('../schedules/components/set-appointment-form.vue').default
+			'appointment-form': require('../appointments/components/set-appointment-form.vue').default,
+			'record-info': require('./components/record-info.vue').default
 		},
 		data(){
 			return {
@@ -112,7 +128,8 @@
 		      	selected_record_index: null,
 
 		      	show_removal_confirmation: false,
-		      	show_appointment_form_modal: false
+		      	show_appointment_form_modal: false,
+		      	show_record_modal: false,
 			}
 		},
 
@@ -121,7 +138,8 @@
 			this.$axios.get('/api/get-patients', {}).then((response) => {
 				let raw_patient_list = response.data.patients;
 				for(let counter = 0; counter < raw_patient_list.length; counter++){
-					this.setPatientToList(raw_patient_list[counter]);
+					let new_patient = this.setPatientToList(raw_patient_list[counter]);
+					this.patients.push(new_patient);
 				}
 
 				let raw_doctors_list = response.data.doctors;
@@ -150,12 +168,13 @@
 					'raw_info': patient_object_parameter,
 				};
 
-				this.patients.push(patient_object);
+				return patient_object;
 			},
 
 			handlePatientFormOnClose(params){
 				if(params.action == 'create' && params.current_record){
-					this.setPatientToList(params.current_record);
+					let new_patient = this.setPatientToList(params.current_record);
+					this.patients.push(new_patient);
 				}
 				if(params.action == 'update' && params.current_record){
 					for(let counter = 0; counter < this.patients.length; counter++){
@@ -192,7 +211,7 @@
 				}
 
 				if(action == 'view record'){
-
+					this.show_record_modal = true;
 				}
 
 				if(action == 'set appointment'){
@@ -217,9 +236,44 @@
 
 			handleAppointmentFormOnClose(data){
 				console.log("DATA AFTER CLOSE ON APPOINTMENT: ", data);
+
+				if(data.status == true){
+					for(let counter = 0; counter < this.patients.length; counter++){
+						if(this.patients[counter]['id'] == data.patient.id){
+							let updated_patient = this.setPatientToList(data.patient);
+							this.patients[counter] = updated_patient;
+							break;
+						}
+					}
+				}
+
 				this.selected_record = {};
 				this.show_appointment_form_modal = false;
 			},
+
+			handleNewPet(petData){
+				console.log("HANDLE NEW PET: ", petData);
+
+				for(let counter = 0; counter < this.patients.length; counter++){
+					if(this.patients[counter]['id'] == this.selected_record.id){
+						console.log("SELECTED RECORD: ", this.selected_record);
+						console.log("SELECTED PATIENTS: ", this.patients[counter]);
+
+						this.selected_record.raw_info.pets.push(petData);
+						break;
+					}
+				}
+			},
+
+			handleUpdatedRecord(data){
+				let updated_record = this.setPatientToList(data);
+				for(let counter = 0; counter < this.patients.length; counter++){
+					if(this.patients[counter]['id'] == updated_record['id']){
+						this.patients[counter] = updated_record;
+						break;
+					}
+				}
+			}
 		}
 	}
 </script>

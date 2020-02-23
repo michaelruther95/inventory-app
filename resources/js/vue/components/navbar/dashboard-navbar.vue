@@ -2,7 +2,7 @@
 	<div id="dashboard-navbar-component">
 		<nav class="navbar navbar-expand navbar-dark bg-dark fixed-top">
 			<div class="container">
-				<a class="navbar-brand" href="#">Inventory App</a>
+				<a class="navbar-brand" href="#">VETMASYS</a>
 				<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
 				<span class="navbar-toggler-icon"></span>
 				</button>
@@ -22,7 +22,7 @@
 								<el-dropdown @command="handleUserNavDropdown">
 									<span class="el-dropdown-link">
 										<small>
-											<i class="el-icon-user"></i> Michael Ruther
+											<i class="el-icon-user"></i> Current User
 										</small>
 									</span>
 									<el-dropdown-menu slot="dropdown">
@@ -64,12 +64,12 @@
 						route_name: 'user_management'
 					},
 					{
-						label: 'Patients List',
+						label: 'Pet Owners List',
 						route_name: 'patients_list'
 					},
 					{
-						label: 'Schedules',
-						route_name: 'schedules'
+						label: 'Appointments',
+						route_name: 'appointments'
 					},
 					{
 						label: 'Inventory',
@@ -81,6 +81,7 @@
 
 		created(){
 			console.log("CURRENT ROUTE: ", this.$route);
+			console.log("CURRENT USER INFO: ", JSON.parse(localStorage.getItem('user_info')));
 		},
 
 		methods: {

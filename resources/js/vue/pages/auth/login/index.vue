@@ -3,7 +3,7 @@
 		<div class="row m-0 justify-content-center">
 			<form v-on:submit.prevent="submit()" class="col-lg-4">
 				<h2 class="mb-0">
-					Inventory App
+					VETMASYS
 				</h2>
 				<small>LOGIN PAGE</small>
 				<hr>
@@ -54,7 +54,9 @@
 				error_message: ''
 			}
 		},
-
+		created(){
+			this.$store.dispatch('pageLoader', { display: false, message: '' });
+		},
 		methods: {
 			submit(){
 				this.$store.dispatch('pageLoader', { display: true, message: 'Logging In, Please Wait...' });
