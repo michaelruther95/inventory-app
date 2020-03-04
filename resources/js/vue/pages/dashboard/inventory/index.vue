@@ -156,11 +156,28 @@
 		>	
 			
 			<div class="row m-0" v-if="show_purchase_form">
+				<div class="col-12" v-if="selected_product.total_stocks - purchase_form.stocks_to_buy < 0">
+					<div class="alert alert-danger font-weight-bold" style="font-size: 13px !important;">
+						The number of stocks you want to buy is greater than the available stocks.
+					</div>
+				</div>
+
 				<div class="col-6">
 					<label class="mb-0"><strong>Item Name:</strong></label>
 				</div>
 				<div class="col-6 text-right">
 					<label class="mb-0">{{ selected_product.raw_info.information.name }}</label>
+				</div>
+				<div class="col-12"><hr></div>
+				<div class="col-6">
+					<label class="mb-0"><strong>Current Stock(s):</strong></label>
+				</div>
+				<div class="col-6 text-right">
+					<label class="mb-0" v-bind:class="{
+						'text-danger': selected_product.total_stocks - purchase_form.stocks_to_buy < 0
+					}">
+						{{ selected_product.total_stocks - purchase_form.stocks_to_buy }}
+					</label>
 				</div>
 				<div class="col-12"><hr></div>
 				<div class="col-6">
@@ -193,7 +210,12 @@
 					
 
 			<span slot="footer" class="dialog-footer">
-				<el-button size="small" type="success" v-on:click="submitPurchase()">
+				<el-button 
+					size="small" 
+					type="success" 
+					v-on:click="submitPurchase()" 
+					:disabled="selected_product.total_stocks - purchase_form.stocks_to_buy < 0"
+				>
 					Submit
 				</el-button>
 				<el-button size="small" type="danger" v-on:click="show_purchase_form = false">
@@ -279,6 +301,7 @@
 
 					this.$message({
 			          	message: 'Product information successfully saved.',
+			          	showClose: true,
 			          	type: 'success'
 			        });
 				}
@@ -320,6 +343,7 @@
 
 					this.$message({
 			          	message: 'Product successfully has a new batch of stocks saved.',
+			          	showClose: true,
 			          	type: 'success'
 			        });
 				}
@@ -362,6 +386,7 @@
 							this.products[counter] = this.setProductObject(response.data.product);
 							this.$message({
 					          	message: 'Purchase successfully created.',
+					          	showClose: true,
 					          	type: 'success'
 					        });
 					        this.show_purchase_form = false;

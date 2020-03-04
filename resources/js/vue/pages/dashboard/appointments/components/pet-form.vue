@@ -81,6 +81,7 @@
 					this.$store.dispatch('pageLoader', { display: false, message: '' });
 					this.$message({
 			          	message: 'Pet has been '+ this.action +'d successfully.',
+			          	showClose: true,
 			          	type: 'success'
 			        });
 				}).catch((error) => {

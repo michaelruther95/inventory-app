@@ -22,33 +22,11 @@
 
 						<hr>
 						<label>Want to send SMS reminder to all the schedules who are already near to their schedule? Click the button below.</label>
-						<el-button type="info" size="small">
+						<el-button type="info" size="small" v-on:click="sendReminder()">
 							Send SMS Reminder
 						</el-button>
 					</div>
 				</div>
-				
-				<!-- FILTERS SECTION -->
-				<!-- <div class="mb-3 row m-0">
-					<div class="col-lg-12">
-						<hr>
-						<label class="mb-0"><strong>FILTERS</strong></label>
-						<hr>
-					</div>
-					<div class="col-lg-3">
-						<label class="input-label"><small>Doctor</small></label>
-					</div>
-					<div class="col-lg-3">
-						
-					</div>
-					<div class="col-lg-3">
-						
-					</div>
-					<div class="col-12">
-						<hr>
-					</div>
-				</div> -->
-
 
 				<div>
 					<div>
@@ -78,11 +56,11 @@
 								prop="patient"
 							>
 							</el-table-column>
-							<el-table-column
+							<!-- <el-table-column
 								label="# of Pets"
 								prop="number_of_pets"
 							>
-							</el-table-column>
+							</el-table-column> -->
 							<el-table-column
 								label="Doctor"
 								prop="doctor"
@@ -92,6 +70,21 @@
 								label="Status"
 								prop="status"
 							>
+							</el-table-column>
+
+							<el-table-column
+								label="Reminder Sent At"
+								prop="reminder_sent_at"
+								width="250"
+							>
+								<template slot-scope="scope">
+									<span v-if="scope.row.reminder_sent_at != 'N/A'">
+										<span>{{ scope.row.reminder_sent_at | moment('MMMM Do YYYY') }}</span>
+									</span>
+									<span v-else>
+										<span>{{ scope.row.reminder_sent_at }}</span>
+									</span>
+								</template>
 							</el-table-column>
 
 							<el-table-column
@@ -131,7 +124,7 @@
 		<el-dialog 
 			:title="dialog_title" 
 			:visible.sync="show_record_dialog" 
-			width="40%" 
+			:width="dialog_width" 
 			:show-close="false" 
 			:close-on-click-modal="false" 
 			:close-on-press-escape="false"
@@ -140,7 +133,7 @@
 				<label>Are you sure you want to cancel this appointment?</label>
 				<span slot="footer" class="dialog-footer text-right d-block">
 					<hr>
-					<el-button size="small" type="danger" v-on:click="show_record_dialog = false">No</el-button>
+					<el-button size="small" type="danger" v-on:click="show_record_dialog = false; record_action = '';">No</el-button>
 					<el-button size="small" type="success" v-on:click="handleRecordRequest()">Yes</el-button>
 				</span>
 			</div>
@@ -155,8 +148,31 @@
 
 				<span slot="footer" class="dialog-footer text-right d-block">
 					<hr>
-					<el-button size="small" type="danger" v-on:click="show_record_dialog = false">Cancel</el-button>
+					<el-button size="small" type="danger" v-on:click="show_record_dialog = false; record_action = '';">Cancel</el-button>
 					<el-button size="small" type="success" v-on:click="handleRecordRequest()">Reschedule</el-button>
+				</span>
+			</div>
+			<div v-if="record_action == 'view record'">
+				<appointment-info 
+					:record="selected_record"
+					:submitting="submit_findings"
+					:diseases="disease_list"
+					v-on:appointmentfinished="handleFinishedAppointment($event)"
+					v-on:aftersubmit="handleRecordChange($event)"
+				></appointment-info>
+				<span slot="footer" class="dialog-footer d-block">
+					<hr>
+					<div class="row m-0">
+						<div class="col-12 px-0 text-right">
+							<el-button size="small" type="danger" v-on:click="show_record_dialog = false; record_action = '';">
+								Close
+							</el-button>
+							<el-button size="small" type="success" v-on:click="submit_findings = true;">
+								Save Changes
+							</el-button>
+						</div>
+					</div>
+							
 				</span>
 			</div>
 		</el-dialog>
@@ -177,6 +193,9 @@
 	export default {
 		data(){
 			return {
+				submit_findings: false,
+				disease_list: [],
+
 				appointments: [],
 				table_search: '',
 				selected_record: {},
@@ -188,11 +207,15 @@
 				record_action: '',
 				show_record_dialog: false,
 				dialog_title: '',
+				dialog_width: '40%',
 
 				api_validators: {
 					appointment_date_time: ''
 				}
 			}
+		},
+		components: {
+			'appointment-info': require('./components/appointment-info.vue').default
 		},
 		created(){
 			this.getAppointments();
@@ -205,6 +228,8 @@
 						this.appointments.push(this.setAppointmentObject(response.data.appointments[counter]));
 					}
 
+					this.disease_list = response.data.diseases;
+
 					console.log("APPOINTMENTS: ", this.appointments);
 
 					this.$store.dispatch('pageLoader', { display: false, message: '' });
@@ -216,6 +241,8 @@
 
 
 			setAppointmentObject(appointment_info){
+				console.log("APPOINTMENT INFO: ", appointment_info);
+
 				let patient_object = {
 					id: appointment_info['id'],
 					patient: appointment_info['patient']['information']['first_name'] + ' ' + appointment_info['patient']['information']['last_name'],
@@ -226,6 +253,11 @@
 					raw_info: appointment_info
 				};
 
+				patient_object['reminder_sent_at'] = 'N/A';
+				if(appointment_info.reminders.length > 0){
+					patient_object['reminder_sent_at'] = appointment_info.reminders[appointment_info.reminders.length - 1]['date_sent'];
+				}
+
 				return patient_object;
 			},
 
@@ -233,6 +265,8 @@
 				this.clearApiValidators();
 
 				this.record_action = action;
+				this.dialog_width = '40%';
+
 				if(action == 'reschedule'){
 					this.dialog_title = 'Reschedule Appointment';
 				}
@@ -241,10 +275,32 @@
 				}
 				if(action == 'view record'){
 					this.dialog_title = 'Appointment Information';
+					this.dialog_width = '70%';
 				}
-
-				this.show_record_dialog = true;
+				
 				this.selected_record = data;
+
+				this.selected_record.raw_info.pet_appointments = this.selected_record.raw_info.pet_appointments.map((obj, index) => {
+					obj.findings_validator = '';
+					obj.prescription_validator = '';
+					obj.disease_list_validator = '';
+
+					obj.no_disease_found = false;
+					obj.disease_dropdown = '';
+					obj.disease_list = [];
+
+					for(let counter = 0; counter < obj.disease_findings.length; counter++){
+						obj.disease_list.push(obj.disease_findings[counter]['disease']['disease_name']);
+					}
+
+					if(obj.information.no_disease_found){
+						obj.no_disease_found = true;
+					}
+
+					return obj;
+				});
+					
+				this.show_record_dialog = true;
 			},
 
 			async handleRecordRequest(){
@@ -293,6 +349,7 @@
 								
 								this.$message({
 						          	message: success_message,
+						          	showClose: true,
 						          	type: 'success'
 						        });
 
@@ -308,6 +365,7 @@
 								if(error.response.status == 404){
 									this.$message({
 							          	message: error.response.data.error,
+							          	showClose: true,
 							          	type: 'error'
 							        });
 								}
@@ -328,19 +386,49 @@
 				}
 			},
 
-			tableRowClassName({row, rowIndex}){
-				let near_to_expire = false;
-				if(!near_to_expire){
-					if(row.raw_info.status == 'expired'){
-						return 'nullify-el-hover bg-opacity-danger';
-					}
-					if(row.raw_info.status == 'finished'){
-						return 'nullify-el-hover bg-opacity-success';
-					}
-					if(row.raw_info.status == 'cancelled'){
-						return 'nullify-el-hover bg-opacity-dark';
+			handleRecordChange(param){
+				console.log("HANDLE RECORD CHANGE: ", param);
+				if(param.data != null){
+					if(param.data.appointment_info){
+						let new_appointment_object = this.setAppointmentObject(param.data.appointment_info);
+
+						for(let counter = 0; counter < this.appointments.length; counter++){
+							if(this.appointments[counter]['id'] == new_appointment_object.id){
+								this.appointments[counter] = new_appointment_object;
+								break;
+							}
+						}
 					}
 				}
+
+				this.submit_findings = param.submitting;
+			},
+
+			tableRowClassName({row, rowIndex}){
+				if(row.raw_info.status == 'expired'){
+					return 'nullify-el-hover bg-opacity-danger';
+				}
+				if(row.raw_info.status == 'finished'){
+					return 'nullify-el-hover bg-opacity-success';
+				}
+				if(row.raw_info.status == 'cancelled'){
+					return 'nullify-el-hover bg-opacity-dark';
+				}
+
+				let near_to_expire = false;
+				let date_basis = new Date();
+  				date_basis.setDate(date_basis.getDate() + 2);
+  				date_basis = new Date(date_basis).toISOString().slice(0,10);
+
+
+  				let date_appointment = new Date(row.appointment_date).toISOString().slice(0, 10);
+
+  				console.log("DATE BASIS: ", date_basis);
+  				console.log("FINAL DATE: ", date_appointment);
+  				if(date_basis == date_appointment || date_basis > date_appointment){
+  					near_to_expire = true;
+  					return 'nullify-el-hover bg-opacity-warning';
+  				}
 
 				return '';
 			},
@@ -349,6 +437,49 @@
 				for(let key in this.api_validators){
 					this.api_validators[key] = '';
 				}
+			},
+
+			sendReminder(){
+				this.$store.dispatch('pageLoader', { display: true, message: 'Sending Reminders For Some Appointments. Please Wait...' });
+
+				this.$axios.post('/api/send-reminder', {}).then((response) => {
+
+					let new_appointments_list = [];
+					for(let counter = 0; counter < response.data.appointments.length; counter++){
+						new_appointments_list.push(this.setAppointmentObject(response.data.appointments[counter]));
+					}
+
+					this.appointments = new_appointments_list;
+					console.log("APPOINTMENTS: ", this.appointments);
+
+
+					this.$store.dispatch('pageLoader', { display: false, message: '' });
+					this.$message({
+			          	message: 'Reminders sent successfully via SMS.',
+			          	showClose: true,
+			          	type: 'success'
+			        });
+				}).catch((error) => {
+					this.$store.dispatch('pageLoader', { display: false, message: '' });
+					this.$message({
+			          	message: 'Oops! Something went wrong. Please refresh the page and try again.',
+			          	showClose: true,
+			          	type: 'error'
+			        });
+				});
+			},
+
+			handleFinishedAppointment(param){
+				for(let counter = 0; counter < this.appointments.length; counter++){
+					if(this.appointments[counter]['id'] == param){
+						console.log("APPOINTMENT INFO: ", this.appointments[counter]);
+						this.appointments[counter]['status'] = 'Finished';
+						this.appointments[counter]['raw_info']['status'] = 'finished';
+						this.show_record_dialog = false;
+						this.record_action = '';
+					}
+				}
+				console.log("HANDLE FINISHED APPOINTMENT: ", param);
 			}
 		}
 	}

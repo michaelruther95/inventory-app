@@ -227,6 +227,7 @@
 					this.$store.dispatch('pageLoader', { display: false, message: '' });
 					this.$message({
 			          	message: 'Patient record successfully removed from your record.',
+			          	showClose: true,
 			          	type: 'success'
 			        });
 				}).catch((error) => {
@@ -266,10 +267,13 @@
 			},
 
 			handleUpdatedRecord(data){
+				console.log("HANDLE UPDATE RECORD: ", data);
+
 				let updated_record = this.setPatientToList(data);
 				for(let counter = 0; counter < this.patients.length; counter++){
 					if(this.patients[counter]['id'] == updated_record['id']){
 						this.patients[counter] = updated_record;
+						this.selected_record = this.patients[counter]
 						break;
 					}
 				}

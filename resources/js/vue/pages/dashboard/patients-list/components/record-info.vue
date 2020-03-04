@@ -5,7 +5,91 @@
 			<!-- APPOINTMENT RECORDS TAB -->
 			<!-- -------------------------------------------------------------------------------- -->
 			<el-tab-pane label="Appointment Records" name="first">
-				<div class="row m-0">
+				<div id="appointment-accordion">
+					<div class="row m-0">
+						<div class="col-12 px-0">
+							<div class="card card-body border bg-light border-radius-0" style="border-radius: 0px !important;">
+								<div class="row m-0">
+									<div class="col-4">
+										<strong>Appointment Date & Time</strong>
+									</div>
+									<div class="col-4">
+										<strong>Pet Name</strong>
+									</div>
+									<div class="col-4">
+										<strong>Appointment Status</strong>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+
+					<div v-for="(appointment, appointment_index) in init_record.raw_info.appointments">
+						<div class="row m-0"  v-for="(pet_appointment, pet_appointment_index) in appointment.pet_appointments">
+							<div class="col-12 px-0">
+								<div class="card card-body border border-top-0 bg-light" style="border-radius: 0px !important;">
+									<a 
+										style="text-decoration: none; color: unset;" 
+										:href="'#collapse-appointment-'+pet_appointment.id" 
+										role="button" 
+										aria-expanded="false" 
+										data-toggle="collapse" 
+										:data-target="'#collapse-appointment-'+pet_appointment.id" 
+										:aria-controls="'collapse-appointment-'+pet_appointment.id" 
+										class="row m-0"
+									>
+										<div class="col-4">
+											{{ appointment.information.appointment_date_time | moment('MMMM Do YYYY, h:mm a') }}
+										</div>
+										<div class="col-4">
+											{{ pet_appointment.pet_info.information.name }}
+										</div>
+										<div class="col-4">
+											{{ appointment.status }}
+										</div>
+									</a>
+									<div class="row m-0">
+										<div 
+											class="col-12 collapse px-0" 
+											:id="'collapse-appointment-'+pet_appointment.id" 
+											data-parent="#appointment-accordion"
+										>
+											<hr>
+											<div style="border-left: 1px dashed grey !important;margin-left: 15px;padding-left: 20px;padding-top: 15px;padding-bottom: 15px;">
+												<!-- <label class="mb-0">{{ pet_appointment.pet_info.information.name }} | <span style="font-style: italic;">{{ pet_appointment.pet_info.information.type }}</span>
+												</label>
+												<hr> -->
+												<div class="mb-2">
+													<span class="d-block"><strong>Reason of Appointment:</strong></span>
+													<span>{{ pet_appointment.information.reason }}</span>
+													<hr>
+												</div>
+												<div>
+													<span class="d-block"><strong>Doctor's Findings:</strong></span>
+													<span>
+														<span v-if="pet_appointment.information.findings">{{ pet_appointment.information.findings }}</span>
+														<span v-else>No Findings Record Available...</span>
+													</span>
+													<hr>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>			
+						</div>		
+					</div>
+				</div>
+
+
+
+
+
+
+
+
+				<!-- <div class="row m-0">
 					<div class="col-lg-12 px-0">
 						<el-collapse v-model="active_appointment_record">
 							<div v-if="init_record.raw_info.appointments.length > 0">
@@ -53,7 +137,7 @@
 							</div>
 						</el-collapse>
 					</div>
-				</div>
+				</div> -->
 			</el-tab-pane>
 
 
@@ -61,7 +145,7 @@
 			<!-- -------------------------------------------------------------------------------- -->
 			<!-- PETS RECORDS TAB -->
 			<!-- -------------------------------------------------------------------------------- -->
-			<el-tab-pane label="Pet Records" name="second">
+			<el-tab-pane label="Pets" name="second">
 				<div class="row m-0">
 					<div class="col-lg-12 px-0">
 						<el-collapse v-model="active_appointment_record">
@@ -87,35 +171,6 @@
 											<el-button type="primary" size="small" v-on:click="setPetForm('update', pet)">
 												<i class="el-icon-edit"></i> Update Pet
 											</el-button>
-										</div>
-
-										<div v-if="pet.pet_appointments.length > 0">
-											<div class="bg-light card card-body mb-3" v-for="(pet_appointment, pet_appointment_index) in pet.pet_appointments">
-												<div>
-													<h5 class="d-block"><strong>Appointment Schedule: </strong></h5>
-													<span>
-														{{ pet_appointment.appointment_info.information.appointment_date_time | moment('dddd, MMMM Do YYYY, h:mm:ss a') }}
-													</span>
-													<hr>
-
-													<span class="d-block"><strong>Doctor's Findings:</strong></span>
-													<span>
-														<span v-if="pet_appointment.information.findings">{{ pet_appointment.information.findings }}</span>
-														<span v-else>No Findings Record Available...</span>
-													</span>
-													<hr>
-
-													<span class="d-block"><strong>Doctor Incharge:</strong></span>
-													<span>
-														{{ pet_appointment.appointment_info.doctor.profile.first_name }} 
-														{{ pet_appointment.appointment_info.doctor.profile.last_name }} | 
-														{{ pet_appointment.appointment_info.doctor.email }}
-													</span>
-												</div>
-											</div>
-										</div>
-										<div v-else>
-											<h5 class="m-0">No Pet Record Found...</h5>
 										</div>
 									</div>
 								</el-collapse-item>
@@ -155,6 +210,7 @@
 		watch: {
 			'record': function(val){
 				console.log("RECORD INFO SELECTED: ", val);
+				this.init_record = val;
 			},
 			'current_tab': function(val){
 				console.log("CURRENT TAB CHANGED: ", val);

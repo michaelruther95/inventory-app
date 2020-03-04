@@ -182,6 +182,7 @@
 
 					this.$message({
 			          	message: 'Pet information successfully saved.',
+			          	showClose: true,
 			          	type: 'success'
 			        });
 				}
@@ -199,6 +200,7 @@
 						if(this.pre_selected_pets.length <= 0){
 							this.$message({
 					          	message: 'Please select a pet first before proceeding to the next step.',
+					          	showClose: true,
 					          	type: 'error'
 					        });
 						}
@@ -263,6 +265,7 @@
 						this.$store.dispatch('pageLoader', { display: false, message: '' });
 						this.$message({
 				          	message: 'Appointment successfully saved.',
+				          	showClose: true,
 				          	type: 'success'
 				        });
 					}).catch((error) => {
@@ -287,6 +290,7 @@
 
 								this.$message({
 						          	message: 'Some of the fields are not properly filled up. Please check your form from Step 1 - 3.',
+						          	showClose: true,
 						          	type: 'error'
 						        });
 							}

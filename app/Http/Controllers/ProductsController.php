@@ -9,7 +9,7 @@ use Validator;
 class ProductsController extends Controller
 {
     public function show(Request $request){
-    	$products = Product::with('batches.purchases')->get();
+    	$products = Product::with('batches')->get();
     	return response()->json([
     		'action' => 'show',
     		'request' => $request->all(),

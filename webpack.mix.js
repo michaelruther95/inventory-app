@@ -10,6 +10,8 @@ const mix = require('laravel-mix');
  | file for the application as well as bundling up all the JS files.
  |
  */
-
-mix.js('resources/js/vue/_app.js', 'public/js/app.js')
-    .sass('resources/sass/app.scss', 'public/css/app.css');
+mix.autoload({
+	'jquery': ['$', 'window.jQuery', 'jQuery'],
+	'vue': ['Vue','window.Vue'],   
+}).js('resources/js/vue/_app.js', 'public/js/app.js')
+  .sass('resources/sass/app.scss', 'public/css/app.css');

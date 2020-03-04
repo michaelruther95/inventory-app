@@ -19,11 +19,12 @@ class ProductBatchesController extends Controller
         	'stocks_purchased' => 0,
         	'expiration_date' => date('Y-m-d', strtotime($request->expiration_date)),
         	'supplier' => $request->supplier,
-        	'delivery_date' => date('Y-m-d', strtotime($request->delivery_date))
+        	'delivery_date' => date('Y-m-d', strtotime($request->delivery_date)),
+                'is_still_available' => true
         ];
         $product_batch->save();
 
-        $product = Product::with('batches.purchases')
+        $product = Product::with('batches')
         			->where('id', $request->product_id)
         			->first();
 

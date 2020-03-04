@@ -83,4 +83,37 @@ strong {
 .el-date-editor.el-input, .el-date-editor.el-input__inner, .el-select {
 	width: 100% !important;
 }
+
+.el-table .cell {
+	word-break: unset !important;
+	white-space: unset !important;
+	// background: red !important;
+}
+// -------------------------------------------------------------
+
+
+
+// -------------------------------------------------------------
+// TRUMBOWYG
+// -------------------------------------------------------------
+.trumbowyg-button-pane {
+	background: unset !important;
+}
+
+.trumbowyg-box, .trumbowyg-editor {
+	margin: 0px !important;
+}
+
+.trumbowyg-insertImage-button, .trumbowyg-fullscreen-button {
+	display: none !important;
+}
+
+.trumbowyg-button-pane .trumbowyg-button-group::after {
+	display: none !important;
+}
+
+// .trumbowyg-insertImage-button:parent, .trumbowyg-fullscreen-button:parent {
+// 	display: none !important;
+// }
+
 // -------------------------------------------------------------

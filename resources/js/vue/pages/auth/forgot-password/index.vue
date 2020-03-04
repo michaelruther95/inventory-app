@@ -61,6 +61,7 @@
 					this.$store.dispatch('pageLoader', { display: false, message: '' });
 					this.$message({
 			          	message: 'Reset link has been successfully sent to your email.',
+			          	showClose: true,
 			          	type: 'success'
 			        });
 				}).catch((error) => {
@@ -74,6 +75,7 @@
 
 					this.$message({
 			          	message: 'Something went wrong. Please try again.',
+			          	showClose: true,
 			          	type: 'error'
 			        });
 

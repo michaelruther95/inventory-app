@@ -1,3 +1,12 @@
+// -----------------------------------------------------
+// Require Bootstrap Dependencies
+// -----------------------------------------------------
+require('bootstrap');
+require('jquery');
+// -----------------------------------------------------
+
+
+// -----------------------------------------------------
 // Main Imports
 // -----------------------------------------------------
 import Vue from 'vue';
@@ -57,6 +66,15 @@ import StoreIndex from './store/_index.js';
 import Vuex from 'vuex';
 Vue.use(Vuex);
 const store = new Vuex.Store(StoreIndex);
+// -----------------------------------------------------
+
+
+// -----------------------------------------------------
+// Vueditor Package Import
+// -----------------------------------------------------
+import Trumbowyg from 'vue-trumbowyg';
+import 'trumbowyg/dist/ui/trumbowyg.css';
+Vue.use(Trumbowyg);
 // -----------------------------------------------------
 
 Router.beforeEach(

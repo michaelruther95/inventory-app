@@ -23,10 +23,10 @@ class CreatePurchasesTable extends Migration
             $table->foreign('product_id')
                   ->references('id')->on('products')
                   ->onDelete('cascade');
-            $table->unsignedBigInteger('product_batch_id');
-            $table->foreign('product_batch_id')
-                  ->references('id')->on('product_batches')
-                  ->onDelete('cascade');
+            // $table->unsignedBigInteger('product_batch_id');
+            // $table->foreign('product_batch_id')
+            //       ->references('id')->on('product_batches')
+            //       ->onDelete('cascade');
             $table->longText('information');
             $table->timestamps();
         });

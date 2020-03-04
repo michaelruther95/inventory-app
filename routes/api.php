@@ -55,13 +55,17 @@ use Illuminate\Http\Request;
 
 
 // |--------------------------------------------------------------------------
-// | APPOINTMENTS ROUTES
+// | APPOINTMENTS ROUTES & PET APPOINTMENTS ROUTES
 // |--------------------------------------------------------------------------
 	Route::group(['middleware' => ['auth:api']], function (){ 
 		Route::post('save-appointment', 'AppointmentsController@create');
 		Route::get('get-appointments', 'AppointmentsController@index');
 		Route::post('reschedule-appointment', 'AppointmentsController@update');
 		Route::post('cancel-appointment', 'AppointmentsController@delete');
+		Route::post('finish-appointment', 'AppointmentsController@finish');
+
+		Route::post('submit-doctor-findings', 'PetAppointmentsController@update');
+
 	});
 // |--------------------------------------------------------------------------
 
@@ -106,5 +110,15 @@ use Illuminate\Http\Request;
 // |--------------------------------------------------------------------------
 	Route::group(['middleware' => ['auth:api']], function (){
 		Route::post('create-product-purchase', 'PurchasesController@create');
+	});
+// |--------------------------------------------------------------------------
+
+
+
+// |--------------------------------------------------------------------------
+// | APPOINTMENT REMINDERS ROUTES
+// |--------------------------------------------------------------------------
+	Route::group(['middleware' => ['auth:api']], function(){
+		Route::post('send-reminder', 'AppointmentRemindersController@create');
 	});
 // |--------------------------------------------------------------------------

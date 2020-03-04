@@ -21,7 +21,7 @@
 			<p class="text-danger"><small>{{ api_validators.email_address }}</small></p>
 
 			<label class="input-label"><small>Phone Number</small></label>
-			<el-input type="text" v-mask="'09#########'" placeholder="Enter Phone Number Here..." size="small" v-model="form.phone_number"></el-input>
+			<el-input type="text" v-mask="'##########'" placeholder="Enter Phone Number Here... (Ex. 9361320927)" size="small" v-model="form.phone_number"></el-input>
 			<p class="text-danger"><small>{{ api_validators.phone_number }}</small></p>
 
 			<label class="input-label"><small>Address</small></label>
@@ -115,6 +115,7 @@
 						this.$store.dispatch('pageLoader', { display: false, message: '' });
 						this.$message({
 				          	message: 'Patient successfully saved.',
+				          	showClose: true,
 				          	type: 'success'
 				        });
 					}).catch((error) => {

@@ -20,4 +20,8 @@ class PetAppointment extends Model
     public function appointmentInfo(){
     	return $this->belongsTo('App\Appointment', 'appointment_id');
     }
+
+    public function diseaseFindings(){
+        return $this->hasMany('App\DiseaseFinding', 'pet_appointment_id');
+    }
 }
