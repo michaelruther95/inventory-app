@@ -159,6 +159,7 @@
 					:diseases="disease_list"
 					v-on:appointmentfinished="handleFinishedAppointment($event)"
 					v-on:aftersubmit="handleRecordChange($event)"
+					v-on:update_disease_list="disease_list = $event"
 				></appointment-info>
 				<span slot="footer" class="dialog-footer d-block">
 					<hr>
@@ -172,7 +173,6 @@
 							</el-button>
 						</div>
 					</div>
-							
 				</span>
 			</div>
 		</el-dialog>
@@ -471,10 +471,14 @@
 
 			handleFinishedAppointment(param){
 				for(let counter = 0; counter < this.appointments.length; counter++){
-					if(this.appointments[counter]['id'] == param){
+					if(this.appointments[counter]['id'] == param.id){
 						console.log("APPOINTMENT INFO: ", this.appointments[counter]);
-						this.appointments[counter]['status'] = 'Finished';
-						this.appointments[counter]['raw_info']['status'] = 'finished';
+
+						this.appointments[counter] = this.setAppointmentObject(param);
+
+						// this.appointments[counter]['status'] = 'Finished';
+						// this.appointments[counter]['raw_info']['status'] = 'finished';
+
 						this.show_record_dialog = false;
 						this.record_action = '';
 					}

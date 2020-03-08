@@ -22,6 +22,31 @@
 				</div>
 				<hr>
 			</div>
+
+			<div class="col-12 pr-0">
+				<div class="alert alert-danger" v-if="appointment_finish_error">
+					{{ appointment_finish_error }}
+				</div>
+			</div>
+
+			<div class="col-7" v-if="editable_record.raw_info.status != 'finished'">
+				<el-input placeholder="Please input" v-model="editable_record.raw_info.doctor.consultation_fee.fee" size="small">
+					<template slot="prepend">CONSULTATION FEE:</template>
+				</el-input>
+				<p class="text-danger mt-1 mb-0">{{ consultation_fee_error }}</p>
+			</div>
+			<div class="col-5 text-right" v-if="editable_record.raw_info.status != 'finished'">
+				<el-button size="small" type="primary" v-on:click="finishAppointment()">
+					Change Appointment Status To Finished
+				</el-button>
+			</div>
+
+			<div class="col-12" v-if="editable_record.raw_info.status == 'finished'">
+				CONSULTATION FEE: {{ editable_record.raw_info.information.fees.consultation_fee | currency('₱') }}
+			</div>
+
+			<div class="col-12"><hr></div>
+
 			<div class="col-4">
 				<el-select v-model="selected_pet" size="small" filterable placeholder="Select Pet Here..." v-on:change="new_disease = ''">
 					<el-option
@@ -33,14 +58,7 @@
 					</el-option>
 				</el-select>
 			</div>
-			<div class="col-4">
-				
-			</div>
-			<div class="col-4 text-right" v-if="editable_record.raw_info.status != 'finished'">
-				<el-button size="small" type="primary" v-on:click="finishAppointment()">
-					Change Appointment Status To Finished
-				</el-button>
-			</div>
+			<div class="col-8"></div>
 
 			<div class="col-12">
 				<div class="alert alert-danger mt-3" v-if="has_api_validator_errors">
@@ -212,21 +230,13 @@
 													</div>
 												</div>
 											</div>
-										</div>
-
-											
-											
+										</div>					
 									</div>
 								</div>
 							</div>
 						</div>
 					</div>
-
-						
 				</div>
-
-
-					
 			</div>
 		</div>
 	</div>
@@ -267,6 +277,7 @@
 					this.$axios.post('/api/submit-doctor-findings', data_to_send).then((response) => {
 						this.$store.dispatch('pageLoader', { display: false, message: '' });
 						this.$emit('aftersubmit', { submitting: false, data: response });
+						this.$emit('update_disease_list', response.data.new_disease_list);
 
 						this.$message({
 				          	message: 'Findings submitted successfully.',
@@ -320,6 +331,9 @@
 				selected_pet: null,
 				has_api_validator_errors: false,
 				change_counter: 0,
+
+				appointment_finish_error: '',
+				consultation_fee_error: ''
 			}
 		},
 		created(){
@@ -368,8 +382,12 @@
 
 			finishAppointment(){
 				this.$store.dispatch('pageLoader', { display: true, message: 'Finishing Appointment. Please Wait...' });
+				this.appointment_finish_error = '';
 
-				this.$axios.post('/api/finish-appointment', { id: this.editable_record.id }).then((response) => {
+				this.$axios.post('/api/finish-appointment', { 
+					id: this.editable_record.id,
+					consultation_fee: this.editable_record.raw_info.doctor.consultation_fee.fee
+				}).then((response) => {
 					this.$store.dispatch('pageLoader', { display: false, message: '' });
 					this.$message({
 			          	message: 'Appointment successfully finished.',
@@ -377,14 +395,25 @@
 			          	type: 'success'
 			        });
 
-			        this.$emit('appointmentfinished', this.editable_record.id);
+			        this.$emit('appointmentfinished', response.data.appointment_info);
 				}).catch((error) => {
+					console.log(error);
+
 					this.$store.dispatch('pageLoader', { display: false, message: '' });
 					this.$message({
 			          	message: 'Something went wrong. Please refresh the page and try again...',
 			          	showClose: true,
 			          	type: 'error'
 			        });
+
+					if(error.response){
+						if(error.response.status == 403){
+							this.appointment_finish_error = error.response.data.error_message;
+							this.consultation_fee_error = error.response.data.consultation_fee_error;
+						}
+						
+					}	
+			        
 				});
 			}
 		}

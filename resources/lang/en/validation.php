@@ -118,6 +118,8 @@ return [
     'url' => 'The :attribute format is invalid.',
     'uuid' => 'The :attribute must be a valid UUID.',
 
+    'old_password' => 'The value of this field does not match to your current password.',
+
     /*
     |--------------------------------------------------------------------------
     | Custom Validation Language Lines

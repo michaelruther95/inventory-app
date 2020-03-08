@@ -16,4 +16,8 @@ class Product extends Model
     public function batches(){
     	return $this->hasMany('App\ProductBatch', 'product_id');
     }
+
+    public function purchases(){
+    	return $this->hasMany('App\Purchase', 'product_id');
+    }
 }

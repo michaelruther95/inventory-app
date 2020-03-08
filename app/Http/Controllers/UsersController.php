@@ -25,4 +25,8 @@ class UsersController extends Controller
     		'users' => $users
     	]);
     }
+
+    public function update(){
+        
+    }
 }

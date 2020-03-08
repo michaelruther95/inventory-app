@@ -92,6 +92,16 @@ const router = new VueRouter({
 				page_title: 'Inventory'
 			}
 		},
+		{
+			path: '/dashboard/invoices',
+			component: require('./pages/dashboard/invoices/index.vue').default,
+			name: 'invoices',
+			meta: {
+				layout: 'dashboard',
+				authorized_users: ['admin', 'assistant'],
+				page_title: 'Invoice List'
+			}
+		},
 		// -------------------------------------------------------------------------
 	]
 });

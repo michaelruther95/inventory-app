@@ -18,11 +18,11 @@
 					)"
 					style="width: 100%"
 				>
-					<el-table-column
+					<!-- <el-table-column
 						label="ID #"
 						prop="id"
 					>
-					</el-table-column>
+					</el-table-column> -->
 					<el-table-column
 						label="Item Name"
 						prop="item_name"
@@ -224,6 +224,32 @@
 			</span>
 		</el-dialog>
 		<!-- ---------------------------------------------------------------------------------- -->
+
+
+
+		<!-- ---------------------------------------------------------------------------------- -->
+		<!-- PRODUCT INFO DIALOG FORM -->
+		<!-- ---------------------------------------------------------------------------------- -->
+		<el-dialog 
+			title="Product Information" 
+			:visible.sync="show_record_information" 
+			width="70%" 
+			:show-close="false" 
+			:close-on-click-modal="false" 
+			:close-on-press-escape="false"
+		>
+			<record-information
+				v-if="show_record_information"
+				:record="selected_product"
+			></record-information>
+
+			<span slot="footer" class="dialog-footer">
+				<el-button size="small" type="danger" v-on:click="show_record_information = false">
+					Close
+				</el-button>
+			</span>
+		</el-dialog>
+		<!-- ---------------------------------------------------------------------------------- -->
 	</div>
 </template>
 <script type="text/javascript">
@@ -253,7 +279,9 @@
 					product_id: '',
 					stocks_to_buy: '',
 					sold_to: ''
-				}
+				},
+
+				show_record_information: false
 			}
 		},
 		created(){
@@ -270,6 +298,7 @@
 		components: {
 			'product-form': require('./components/product-form.vue').default,
 			'restock-form': require('./components/restock-form.vue').default,
+			'record-information': require('./components/record-information.vue').default
 		},
 		methods: {
 			setProductObject(param){
@@ -327,6 +356,10 @@
 					for(let key in this.purchase_form){
 						this.purchase_form[key] = '';
 					}
+				}
+				if(action == 'view record'){
+					console.log("VIEW RECORD!");
+					this.show_record_information = true;
 				}
 
 				console.log("SELECTED PRODUCT: ", this.selected_product);

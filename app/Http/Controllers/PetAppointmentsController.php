@@ -58,7 +58,7 @@ class PetAppointmentsController extends Controller
     		}
     	}
 
-    	$appointment_info = Appointment::with('doctor', 'patient', 'creator', 'petAppointments.petInfo.petAppointments.appointmentInfo', 'reminders', 'petAppointments.diseaseFindings.disease', 'petAppointments.petInfo.petAppointments.diseaseFindings.disease')
+    	$appointment_info = Appointment::with('doctor.consultationFee', 'patient', 'creator', 'petAppointments.petInfo.petAppointments.appointmentInfo', 'reminders', 'petAppointments.diseaseFindings.disease', 'petAppointments.petInfo.petAppointments.diseaseFindings.disease')
                         ->whereHas('petAppointments', function($query){
                             $query->whereHas('petInfo', function($first_inner_query){
                                 $first_inner_query->whereHas('petAppointments', function($second_inner_query){
@@ -69,10 +69,13 @@ class PetAppointmentsController extends Controller
                         ->where('id', $request->appointment_id)
                         ->first();
 
+        $new_disease_list = Disease::get();
+
     	return response()->json([
     		'action' => 'submit-doctor-findings',
     		'request' => $request->all(),
-    		'appointment_info' => $appointment_info
+    		'appointment_info' => $appointment_info,
+            'new_disease_list' => $new_disease_list
     	]);
     }
 }

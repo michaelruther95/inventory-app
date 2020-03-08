@@ -43,4 +43,8 @@ class User extends Authenticatable
     public function userRole(){
         return $this->hasOne('App\UserRole', 'user_id');
     }
+
+    public function consultationFee(){
+        return $this->hasOne('App\ConsultationFee', 'doctor_id');
+    }
 }

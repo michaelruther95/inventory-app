@@ -24,9 +24,9 @@ class AppointmentRequest extends FormRequest
      */
     public function rules()
     {
-        $allowedActions = ['create', 'update', 'cancel'];
+        $allowed_actions = ['create', 'update', 'cancel'];
         $rules = [
-            'action' => 'required|in:'.implode(',', $allowedActions),
+            'action' => 'required|in:'.implode(',', $allowed_actions),
         ];
 
         if(Request::input('action') == 'create'){

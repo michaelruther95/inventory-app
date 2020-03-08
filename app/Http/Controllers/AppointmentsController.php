@@ -22,7 +22,7 @@ class AppointmentsController extends Controller
             $expired_appointments->save();
         }
 
-        $appointments = Appointment::with('doctor', 'patient', 'creator', 'petAppointments.petInfo.petAppointments.appointmentInfo', 'reminders', 'petAppointments.diseaseFindings.disease', 'petAppointments.petInfo.petAppointments.diseaseFindings.disease')
+        $appointments = Appointment::with('doctor.consultationFee', 'patient', 'creator', 'petAppointments.petInfo.petAppointments.appointmentInfo', 'reminders', 'petAppointments.diseaseFindings.disease', 'petAppointments.petInfo.petAppointments.diseaseFindings.disease')
                         ->whereHas('petAppointments', function($query){
                             $query->whereHas('petInfo', function($first_inner_query){
                                 $first_inner_query->whereHas('petAppointments', function($second_inner_query){
@@ -74,7 +74,7 @@ class AppointmentsController extends Controller
             $pet_appointment->save();
         }
 
-        $appointment_info = Appointment::with('doctor', 'patient', 'creator', 'petAppointments.petInfo.petAppointments.appointmentInfo', 'reminders', 'petAppointments.diseaseFindings.disease', 'petAppointments.petInfo.petAppointments.diseaseFindings.disease')
+        $appointment_info = Appointment::with('doctor.consultationFee', 'patient', 'creator', 'petAppointments.petInfo.petAppointments.appointmentInfo', 'reminders', 'petAppointments.diseaseFindings.disease', 'petAppointments.petInfo.petAppointments.diseaseFindings.disease')
                     ->where('id', $appointment->id)
                     ->first();
 
@@ -120,7 +120,7 @@ class AppointmentsController extends Controller
         $appointment_info->information = $app_info;
         $appointment_info->save();
 
-        $appointment_info = Appointment::with('doctor', 'patient', 'creator', 'petAppointments.petInfo.petAppointments.appointmentInfo', 'reminders', 'petAppointments.diseaseFindings.disease', 'petAppointments.petInfo.petAppointments.diseaseFindings.disease')
+        $appointment_info = Appointment::with('doctor.consultationFee', 'patient', 'creator', 'petAppointments.petInfo.petAppointments.appointmentInfo', 'reminders', 'petAppointments.diseaseFindings.disease', 'petAppointments.petInfo.petAppointments.diseaseFindings.disease')
                             ->where('id', $appointment_info->id)
                             ->first();
 
@@ -149,10 +149,48 @@ class AppointmentsController extends Controller
     }
 
     public function finish(Request $request){
-        $appointment_info = Appointment::with('doctor', 'patient', 'creator', 'petAppointments.petInfo.petAppointments.appointmentInfo', 'reminders', 'petAppointments.diseaseFindings.disease', 'petAppointments.petInfo.petAppointments.diseaseFindings.disease')
+        $appointment_info = Appointment::with('doctor.consultationFee', 'patient', 'creator', 'petAppointments.petInfo.petAppointments.appointmentInfo', 'reminders', 'petAppointments.diseaseFindings.disease', 'petAppointments.petInfo.petAppointments.diseaseFindings.disease')
                             ->where('id', $request->id)
                             ->first();
+
+        $error_msg = null;
+        $consultation_fee_error = null;
+
+        foreach($appointment_info->petAppointments as $pet_appointment){
+            if(!$pet_appointment->information['findings']){
+                $error_msg = "One of the pets of this appointment is still not diagnosed. Please check every pets on this appointment before finishing this appointment.";
+            }
+        }
+
+
+        if((int)$request->consultation_fee){
+            if((int)$request->consultation_fee <= 0){
+                $consultation_fee_error = 'Consultation fee must be greater than 0';
+            }
+        }
+        else{
+            $consultation_fee_error = 'Consultation fee must be numeric';
+        }
+
+
+        if($error_msg || $consultation_fee_error){
+            return response()->json([
+                'error_message' => $error_msg,
+                'consultation_fee_error' => $consultation_fee_error
+            ], 403);
+        }
+
+        $appointment_information = $appointment_info->information;
+        $appointment_information['fees'] = [
+            'consultation_fee' => $request->consultation_fee
+        ];
+
         $appointment_info->status = 'finished';
+        $appointment_info->information = $appointment_information;
         $appointment_info->save();
+
+        return response()->json([
+            'appointment_info' => $appointment_info 
+        ]);
     }
 }

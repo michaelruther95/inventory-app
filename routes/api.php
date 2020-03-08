@@ -22,6 +22,7 @@ use Illuminate\Http\Request;
 	Route::post('reset-password', 'AuthController@update');
 	Route::group(['middleware' => ['auth:api']], function (){ 
 		Route::get('fetch-auth-info', 'AuthController@index');
+		Route::post('update-account', 'AuthController@update');
 		Route::delete('logout', 'AuthController@delete');
 	});
 // |--------------------------------------------------------------------------
@@ -76,6 +77,11 @@ use Illuminate\Http\Request;
 // |--------------------------------------------------------------------------
 	Route::group(['middleware' => ['auth:api']], function (){ 
 		Route::get('get-users/{type}', 'UsersController@show');
+		// Route::post('update-account', 'UsersController@update');
+
+		Route::get('get-all-users', 'UsersManagementController@show');
+		Route::post('create-new-user', 'UsersManagementController@create');
+		Route::post('change-user-status/{status}', 'UsersManagementController@update');
 	});
 // |--------------------------------------------------------------------------
 
@@ -120,5 +126,24 @@ use Illuminate\Http\Request;
 // |--------------------------------------------------------------------------
 	Route::group(['middleware' => ['auth:api']], function(){
 		Route::post('send-reminder', 'AppointmentRemindersController@create');
+	});
+// |--------------------------------------------------------------------------
+
+
+
+// |--------------------------------------------------------------------------
+// | INVOICES ROUTES
+// |--------------------------------------------------------------------------
+	Route::group(['middleware' => ['auth:api']], function(){
+		Route::get('get-invoices', 'InvoicesController@index');
+	});
+// |--------------------------------------------------------------------------
+
+
+// |--------------------------------------------------------------------------
+// | INVOICES ROUTES
+// |--------------------------------------------------------------------------
+	Route::group(['middleware' => ['auth:api']], function(){
+		Route::get('get-dashboard-resources', 'DashboardController@index');
 	});
 // |--------------------------------------------------------------------------

@@ -3,6 +3,7 @@
 use Illuminate\Database\Seeder;
 use App\User;
 use App\UserRole;
+use App\ConsultationFee;
 
 class UsersTableSeeder extends Seeder
 {
@@ -27,6 +28,13 @@ class UsersTableSeeder extends Seeder
         $userRole->role_id = 1;
         $userRole->user_id = 1;
         $userRole->save();
+
+
+        $consultation_fee = new ConsultationFee();
+        $consultation_fee->doctor_id = $user->id;
+        $consultation_fee->fee = env('DEFAULT_CONSULTATION_FEE');
+        $consultation_fee->save();
+
 
         $user = new User();
         $user->profile = [

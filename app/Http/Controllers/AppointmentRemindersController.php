@@ -38,7 +38,7 @@ class AppointmentRemindersController extends Controller
     	}
 
 
-    	$appointments = Appointment::with('doctor', 'patient', 'creator', 'petAppointments.petInfo.petAppointments.appointmentInfo', 'reminders', 'petAppointments.diseaseFindings.disease', 'petAppointments.petInfo.petAppointments.diseaseFindings.disease')->get();
+    	$appointments = Appointment::with('doctor.consultationFee', 'patient', 'creator', 'petAppointments.petInfo.petAppointments.appointmentInfo', 'reminders', 'petAppointments.diseaseFindings.disease', 'petAppointments.petInfo.petAppointments.diseaseFindings.disease')->get();
 
     	return response()->json([
     		'action' => 'send-reminder',

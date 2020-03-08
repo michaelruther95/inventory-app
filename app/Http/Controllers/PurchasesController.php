@@ -143,7 +143,7 @@ class PurchasesController extends Controller
 			$purchase_batch->save();
 		}
 
-		$product = Product::with('batches')
+		$product = Product::with('batches', 'purchases')
         			->where('id', $request->product_id)
         			->first();
 

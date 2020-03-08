@@ -77,6 +77,14 @@ import 'trumbowyg/dist/ui/trumbowyg.css';
 Vue.use(Trumbowyg);
 // -----------------------------------------------------
 
+
+// -----------------------------------------------------
+// Vue 2 Frappe Charts Import
+// -----------------------------------------------------
+import Chart from 'vue2-frappe';
+Vue.use(Chart);
+// -----------------------------------------------------
+
 Router.beforeEach(
 	(to, from, next) => {
 		console.log("TO INFO: ", to);
@@ -103,6 +111,7 @@ Router.beforeEach(
 			else{
 				console.log("TOKEN FOUND!");
 				Vue.axios.get('/api/fetch-auth-info', {}).then((response) => {
+					localStorage.setItem('user_info', JSON.stringify(response.data.user_info));
 					next();
 					// store.dispatch('pageLoader', { display: false, message: '' });
 				}).catch((error) => {
