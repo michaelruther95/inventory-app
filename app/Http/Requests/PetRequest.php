@@ -26,11 +26,13 @@ class PetRequest extends FormRequest
     {
         $allowedActions = ['create', 'update', 'delete'];
 
+        $current_year = date('Y');
+
         $rules = [
             'action' => 'required|in:'.implode(',', $allowedActions),
             'name' => 'required',
             'type' => 'required',
-            'birth_year' => 'required|numeric|min:2000'
+            'birth_year' => 'required|numeric|min:2000|max:'.$current_year
         ];
 
         if(Request::input('action') != 'delete'){

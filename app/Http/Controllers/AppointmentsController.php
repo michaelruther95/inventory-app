@@ -40,16 +40,16 @@ class AppointmentsController extends Controller
     }
 
     public function create(AppointmentRequest $request){
-    	if($request->action == 'create'){
-    		$appointment = Appointment::checkSchedAvailability($request);
-    		if($appointment){
-    			return response()->json([
-    				'errors' => [
-    					'appointment_date_time' => ['This time is no longer available. Please select a different time.']
-    				]
-    			], 422);
-    		}
-    	}
+    	// if($request->action == 'create'){
+    	// 	$appointment = Appointment::checkSchedAvailability($request);
+    	// 	if($appointment){
+    	// 		return response()->json([
+    	// 			'errors' => [
+    	// 				'appointment_date_time' => ['This time is no longer available. Please select a different time.']
+    	// 			]
+    	// 		], 422);
+    	// 	}
+    	// }
 
     	$appointment = new Appointment();
     	$appointment->doctor_id = $request->doctor;
@@ -90,14 +90,14 @@ class AppointmentsController extends Controller
     }
 
     public function update(AppointmentRequest $request){
-        $appointment = Appointment::checkSchedAvailability($request);
-        if($appointment){
-            return response()->json([
-                'errors' => [
-                    'appointment_date_time' => ['This time is no longer available. Please select a different time.']
-                ]
-            ], 422);
-        }
+        // $appointment = Appointment::checkSchedAvailability($request);
+        // if($appointment){
+        //     return response()->json([
+        //         'errors' => [
+        //             'appointment_date_time' => ['This time is no longer available. Please select a different time.']
+        //         ]
+        //     ], 422);
+        // }
 
         $appointment_info = Appointment::where('id', $request->record_id)->first();
         if(!$appointment_info){
