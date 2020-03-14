@@ -4,26 +4,37 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Product;
+use App\Supplier;
 use Validator;
 
 class ProductsController extends Controller
 {
     public function show(Request $request){
-    	$products = Product::with('batches', 'purchases')->get();
+        $suppliers = Supplier::get();
+    	$products = Product::with('batches.supplierInfo', 'purchases')->get();
     	return response()->json([
     		'action' => 'show',
     		'request' => $request->all(),
-    		'products' => $products
+    		'products' => $products,
+            'suppliers' => $suppliers
     	]);
     }
 
     public function create(Request $request){
-    	$validator = Validator::make($request->all(), [
-    					'name' => 'required|min:3',
-    					'generic_name' => 'required|min:3',
-    					'brand' => 'required|min:3',
-                        'price' => 'required|numeric'
-    				]);
+        $allowed_types = ['medicine', 'medical supply'];
+
+        $rules = [
+            'product_type' => 'required|in:'.implode(',', $allowed_types),
+            'name' => 'required|min:3',
+            'brand' => 'required|min:3',
+            'price' => 'required|numeric'
+        ];
+
+        if($request->product_type == 'medicine'){
+            $rules['generic_name'] = 'required|min:3';
+        }
+
+    	$validator = Validator::make($request->all(), $rules);
     	if($validator->fails()){
     		return response()->json([
     			'errors' => $validator->messages()
@@ -32,6 +43,7 @@ class ProductsController extends Controller
 
     	$product = new Product();
     	$product->information = [
+            'product_type' => $request->product_type,
     		'name' => $request->name,
     		'generic_name' => $request->generic_name,
     		'brand' => $request->brand,
@@ -39,7 +51,7 @@ class ProductsController extends Controller
     		'description' => $request->description,
     	];
     	$product->save();
-    	$product = Product::with('batches.purchases')->where('id', $product->id)->first();
+    	$product = Product::with('batches.supplierInfo', 'purchases')->where('id', $product->id)->first();
 
     	return response()->json([
     		'action' => 'create',
@@ -71,7 +83,7 @@ class ProductsController extends Controller
     		'description' => $request->description,
     	];
     	$product->save();
-    	$product = Product::with('batches.purchases')->where('id', $product->id)->first();
+    	$product = Product::with('batches.supplierInfo', 'purchases')->where('id', $product->id)->first();
 
     	return response()->json([
     		'action' => 'update',

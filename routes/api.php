@@ -147,3 +147,23 @@ use Illuminate\Http\Request;
 		Route::get('get-dashboard-resources', 'DashboardController@index');
 	});
 // |--------------------------------------------------------------------------
+
+
+// |--------------------------------------------------------------------------
+// | SUPPLIER ROUTES
+// |--------------------------------------------------------------------------
+	Route::group(['middleware' => ['auth:api']], function(){
+		Route::get('get-suppliers', 'SuppliersController@index');
+		Route::post('create-new-supplier', 'SuppliersController@create');
+		Route::post('update-supplier', 'SuppliersController@update');
+	});
+// |--------------------------------------------------------------------------
+
+
+// |--------------------------------------------------------------------------
+// | MEDICAL RECORDS ROUTES
+// |--------------------------------------------------------------------------
+	Route::group(['middleware' => ['auth:api']], function(){
+		Route::get('get-medical-records', 'MedicalRecordsController@index');
+	});
+// |--------------------------------------------------------------------------

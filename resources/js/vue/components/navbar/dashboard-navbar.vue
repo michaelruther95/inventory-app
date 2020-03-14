@@ -1,42 +1,40 @@
 <template>
 	<div id="dashboard-navbar-component">
 		<nav class="navbar navbar-expand navbar-dark bg-dark fixed-top">
-			<div class="container">
-				<span class="navbar-brand">VETMASYS</span>
-				<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-				<span class="navbar-toggler-icon"></span>
-				</button>
-				<div class="collapse navbar-collapse" id="navbarNav">
-					<ul class="navbar-nav">
-						<li class="nav-item pr-2" v-for="navbar_item in navbar_items">
-							<router-link :to="{ name: navbar_item.route_name }" class="nav-link" v-bind:class="{
-								'active': navbar_item.route_name == $route.name
-							}" v-if="navbar_item.allowed_types.includes(current_user_type)">
-								<small>{{ navbar_item.label }}</small>
-							</router-link>
-						</li>
-					</ul>
-					<ul class="navbar-nav ml-auto"> 
-						<li class="nav-item dropdown">
-							<a href="javascript:void(0)" class="nav-link">
-								<el-dropdown @command="handleUserNavDropdown">
-									<span class="el-dropdown-link">
-										<small>
-											<i class="el-icon-user"></i> Current User
-										</small>
-									</span>
-									<el-dropdown-menu slot="dropdown">
-										<el-dropdown-item>My Profile</el-dropdown-item>
-										<el-dropdown-item command="account_settings">Account Settings</el-dropdown-item>
-										<el-dropdown-item command="logout" divided>
-											Logout
-										</el-dropdown-item>
-									</el-dropdown-menu>
-								</el-dropdown>
-							</a>
-						</li>
-					</ul>
-				</div>
+			<span class="navbar-brand">VETMASYS</span>
+			<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+			</button>
+			<div class="collapse navbar-collapse" id="navbarNav">
+				<ul class="navbar-nav">
+					<li class="nav-item pr-2" v-for="navbar_item in navbar_items">
+						<router-link :to="{ name: navbar_item.route_name }" class="nav-link" v-bind:class="{
+							'active': navbar_item.route_name == $route.name
+						}" v-if="navbar_item.allowed_types.includes(current_user_type)">
+							<small>{{ navbar_item.label }}</small>
+						</router-link>
+					</li>
+				</ul>
+				<ul class="navbar-nav ml-auto"> 
+					<li class="nav-item dropdown">
+						<a href="javascript:void(0)" class="nav-link">
+							<el-dropdown @command="handleUserNavDropdown">
+								<span class="el-dropdown-link">
+									<small>
+										<i class="el-icon-user"></i> Current User
+									</small>
+								</span>
+								<el-dropdown-menu slot="dropdown">
+									<el-dropdown-item>My Profile</el-dropdown-item>
+									<el-dropdown-item command="account_settings">Account Settings</el-dropdown-item>
+									<el-dropdown-item command="logout" divided>
+										Logout
+									</el-dropdown-item>
+								</el-dropdown-menu>
+							</el-dropdown>
+						</a>
+					</li>
+				</ul>
 			</div>
 		</nav>
 
@@ -113,6 +111,16 @@
 					{
 						label: 'Invoices',
 						route_name: 'invoices',
+						allowed_types: ['doctor', 'employee']
+					},
+					{
+						label: 'Suppliers',
+						route_name: 'suppliers',
+						allowed_types: ['doctor', 'employee']
+					},
+					{
+						label: 'Medical Records',
+						route_name: 'medical_records',
 						allowed_types: ['doctor', 'employee']
 					}
 				]

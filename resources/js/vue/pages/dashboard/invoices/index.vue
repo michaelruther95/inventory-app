@@ -1,9 +1,27 @@
 <template>
 	<div id="invoices-page-component">
 		<div class="row m-0">
+			<div class="col-lg-4">
+				<el-date-picker
+					v-model="table_date_filter"
+					type="date"
+					placeholder="Select Date Here To Filter Results..."
+					size="small"
+					v-on:change="setDate()"
+
+				>
+				</el-date-picker>
+			</div>
 			<div class="col-12">
+				<hr>
+
 				<el-table
-					:data="invoices"
+					:data="invoices.filter(
+						data => !table_search || 
+						(
+							data.purchase_date.includes(table_search)
+						)
+					)"
 					style="width: 100%"
 				>
 					<el-table-column
@@ -44,6 +62,17 @@
 							{{ scope.row.total | currency('₱') }}
 						</template>
 					</el-table-column>
+
+					<el-table-column
+						label="Action"
+						prop="action"
+					>
+						<template slot-scope="scope">
+							<el-button type="danger" size="small" plain>
+								Void Invoice
+							</el-button>
+						</template>
+					</el-table-column>
 				</el-table>
 			</div>
 		</div>
@@ -54,6 +83,8 @@
 		data(){
 			return {
 				invoices: [],
+				table_search: null,
+				table_date_filter: null,
 			}
 		},
 		created(){
@@ -67,6 +98,8 @@
 						stocks_purchase: response.data.purchases[counter]['information']['stocks_purchase'],
 						price_per_stock: response.data.purchases[counter]['information']['price_per_stock'],
 						total: response.data.purchases[counter]['information']['total'],
+						action: '',
+						raw_info: response.data.purchases[counter]
 					};
 
 					this.invoices.push(purchase_object);
@@ -78,6 +111,19 @@
 
 				this.$store.dispatch('pageLoader', { display: false, message: '' });
 			});
+		},
+		methods: {
+			setDate(){
+				if(this.table_date_filter){
+					let splitted_date = this.$elementHelper.formatDate(this.table_date_filter).split(' ');
+					console.log("SET DATE FILTER: ", splitted_date[0]);
+					this.table_search = splitted_date[0];
+				}
+				else{
+					this.table_date_filter = null;
+					this.table_search = null;
+				}
+			}
 		}
 	}
 </script>

@@ -102,6 +102,26 @@ const router = new VueRouter({
 				page_title: 'Invoice List'
 			}
 		},
+		{
+			path: '/dashboard/suppliers',
+			component: require('./pages/dashboard/suppliers/index.vue').default,
+			name: 'suppliers',
+			meta: {
+				layout: 'dashboard',
+				authorized_users: ['admin', 'assistant'],
+				page_title: 'Suppliers Manifest'
+			}
+		},
+		{
+			path: '/dashboard/medical-records',
+			component: require('./pages/dashboard/medical-records/index.vue').default,
+			name: 'medical_records',
+			meta: {
+				layout: 'dashboard',
+				authorized_users: ['admin', 'assistant'],
+				page_title: 'Medical Records'
+			}
+		},
 		// -------------------------------------------------------------------------
 	]
 });

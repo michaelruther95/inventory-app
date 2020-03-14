@@ -7,7 +7,6 @@
 				</el-button>
 				<hr>
 
-
 				<el-table
 					:row-class-name="tableRowClassName"
 					:data="products.filter(
@@ -18,20 +17,31 @@
 					)"
 					style="width: 100%"
 				>
-					<!-- <el-table-column
-						label="ID #"
-						prop="id"
-					>
-					</el-table-column> -->
 					<el-table-column
 						label="Item Name"
 						prop="item_name"
 					>
 					</el-table-column>
 					<el-table-column
+						label="Type"
+						prop="product_type"
+					>
+						<template slot-scope="scope">
+							{{ scope.row.product_type | capitalize }}
+						</template>
+					</el-table-column>
+					<el-table-column
 						label="Generic Name"
 						prop="generic_name"
 					>
+						<template slot-scope="scope">
+							<span v-if="scope.row.generic_name">
+								{{ scope.row.generic_name }}
+							</span>
+							<span v-else>
+								N/A
+							</span>
+						</template>
 					</el-table-column>
 					<el-table-column
 						label="Brand"
@@ -39,8 +49,13 @@
 					>
 					</el-table-column>
 					<el-table-column
-						label="Total Stocks"
+						label="Remaining Stocks"
 						prop="total_stocks"
+					>
+					</el-table-column>
+					<el-table-column
+						label="Stocks Purchased"
+						prop="stocks_purchased"
 					>
 					</el-table-column>
 					<el-table-column
@@ -127,7 +142,9 @@
 				:submitting="restock_form_submitting"
 				:product="selected_product"
 				:action="restock_form_action"
+				:suppliers="suppliers"
 				v-on:aftersubmit="handleAfterSubmitRestockForm($event)"
+				v-on:resetsupplierlist="suppliers = $event"
 			></restock-form>
 			
 			<span slot="footer" class="dialog-footer">
@@ -233,7 +250,7 @@
 		<el-dialog 
 			title="Product Information" 
 			:visible.sync="show_record_information" 
-			width="70%" 
+			width="90%" 
 			:show-close="false" 
 			:close-on-click-modal="false" 
 			:close-on-press-escape="false"
@@ -258,6 +275,7 @@
 			return {
 				table_search: '',
 				products: [],
+				suppliers: [],
 
 				show_product_form: false,
 				product_form_submitting: false,
@@ -287,6 +305,7 @@
 		created(){
 			this.$store.dispatch('pageLoader', { display: true, message: 'Retrieving Products List, Please Wait...' });
 			this.$axios.get('/api/get-products', {}).then((response) => {
+				this.suppliers = response.data.suppliers;
 				for(let counter = 0; counter < response.data.products.length; counter++){
 					this.products.push(this.setProductObject(response.data.products[counter]));
 				}
@@ -306,10 +325,12 @@
 
 				return {
 					id: param.id,
+					product_type: param.information.product_type,
 					item_name: param.information.name,
 					generic_name: param.information.generic_name,
 					brand: param.information.brand,
 					total_stocks: this.addAllBatches(param),
+					stocks_purchased: this.addAllPurchases(param),
 					raw_info: param
 				};
 			},
@@ -386,6 +407,8 @@
 			},
 
 			addAllBatches(param){
+				console.log("ADD ALL BATCHES: ", param.batches);
+
 				let stock_count = 0;
 				for(let counter = 0; counter < param.batches.length; counter++){
 					if(!param.batches[counter]['information']['is_expired']){
@@ -393,6 +416,14 @@
 					}
 				}
 
+				return stock_count;
+			},
+
+			addAllPurchases(param){
+				let stock_count = 0;
+				for(let counter = 0; counter < param.batches.length; counter++){
+					stock_count += param.batches[counter]['information']['stocks_purchased'];
+				}
 				return stock_count;
 			},
 

@@ -31,7 +31,7 @@ class ProductBatchRequest extends FormRequest
             'product_id' => 'required|exists:products,id',
             'number_of_stocks' => 'required|numeric',
             'expiration_date' => 'required|date|after_or_equal:'.date('Y-m-d'),
-            'supplier' => 'required',
+            'supplier' => 'required|numeric|exists:suppliers,id',
             'delivery_date' => 'required|date|before_or_equal:'.date('Y-m-d')
         ];
 

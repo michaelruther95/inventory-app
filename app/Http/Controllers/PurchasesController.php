@@ -94,7 +94,8 @@ class PurchasesController extends Controller
 		$new_purchase->information = [
 			'stocks_purchase' => $request->stocks_to_buy,
 			'price_per_stock' => $product_info->information['price'],
-			'total' => $product_info->information['price'] * $request->stocks_to_buy
+			'total' => $product_info->information['price'] * $request->stocks_to_buy,
+			'sold_to' => $request->sold_to
 		];
 		$new_purchase->save();
 			
@@ -143,7 +144,7 @@ class PurchasesController extends Controller
 			$purchase_batch->save();
 		}
 
-		$product = Product::with('batches', 'purchases')
+		$product = Product::with('batches.supplierInfo', 'purchases')
         			->where('id', $request->product_id)
         			->first();
 

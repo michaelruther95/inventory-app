@@ -29,7 +29,7 @@ class PatientRequest extends FormRequest
             'first_name' => 'required',
             'last_name' => 'required',
             'email_address' => 'required|email|unique:patients,email',
-            'phone_number' => 'required|min:9',
+            'phone_number' => 'required|min:10|max:10',
             'address' => 'required',
             'action' => 'required|in:'.implode(',', $allowedActions)
         ];

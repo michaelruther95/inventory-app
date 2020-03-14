@@ -1,12 +1,22 @@
 <template>
 	<div id="product-form-component">
+		<label class="input-label"><small>Product Type</small></label>
+		<el-select size="small" v-model="form.product_type">
+			<el-option label="-- Select Product Type Here --" value=""></el-option>
+			<el-option label="Medicine" value="medicine"></el-option>
+			<el-option label="Medical Supply" value="medical supply"></el-option>
+		</el-select>
+		<p class="text-danger"><small>{{ api_validators.product_type }}</small></p>
+
 		<label class="input-label"><small>Name</small></label>
 		<el-input placeholder="Enter Product Name Here..." size="small" v-model="form.name"></el-input>
 		<p class="text-danger"><small>{{ api_validators.name }}</small></p>
 
-		<label class="input-label"><small>Generic Name</small></label>
-		<el-input placeholder="Enter Generic Name Here..." size="small" v-model="form.generic_name"></el-input>
-		<p class="text-danger"><small>{{ api_validators.generic_name }}</small></p>
+		<div v-if="form.product_type == 'medicine'">
+			<label class="input-label"><small>Generic Name</small></label>
+			<el-input placeholder="Enter Generic Name Here..." size="small" v-model="form.generic_name"></el-input>
+			<p class="text-danger"><small>{{ api_validators.generic_name }}</small></p>
+		</div>
 
 		<label class="input-label"><small>Brand</small></label>
 		<el-input placeholder="Enter Brand Here..." size="small" v-model="form.brand"></el-input>
@@ -68,6 +78,7 @@
 			return {
 				form: {
 					id: '',
+					product_type: '',
 					name: '',
 					generic_name: '',
 					description: '',
@@ -76,6 +87,7 @@
 				},
 				api_validators: {
 					id: '',
+					product_type: '',
 					name: '',
 					generic_name: '',
 					description: '',

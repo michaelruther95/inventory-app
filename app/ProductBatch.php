@@ -17,6 +17,10 @@ class ProductBatch extends Model
         return $this->hasMany('App\Purchase', 'product_batch_id');
     }
 
+    public function supplierInfo(){
+        return $this->belongsTo('App\Supplier', 'supplier_id');
+    }
+
     // --------------------------------------------------------------------
     // ACCESSORS
     // --------------------------------------------------------------------
