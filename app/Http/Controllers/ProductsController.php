@@ -12,6 +12,13 @@ class ProductsController extends Controller
     public function show(Request $request){
         $suppliers = Supplier::get();
     	$products = Product::with('batches.supplierInfo', 'purchases')->get();
+
+        foreach ($products as $product) {
+            $product->is_selected = false;
+            $product->stocks_to_buy = 0;
+            $product->validation_error = '';
+        }
+
     	return response()->json([
     		'action' => 'show',
     		'request' => $request->all(),
@@ -51,7 +58,11 @@ class ProductsController extends Controller
     		'description' => $request->description,
     	];
     	$product->save();
+
     	$product = Product::with('batches.supplierInfo', 'purchases')->where('id', $product->id)->first();
+        $product->is_selected = false;
+        $product->stocks_to_buy = 0;
+        $product->validation_error = '';
 
     	return response()->json([
     		'action' => 'create',
@@ -84,7 +95,10 @@ class ProductsController extends Controller
     	];
     	$product->save();
     	$product = Product::with('batches.supplierInfo', 'purchases')->where('id', $product->id)->first();
-
+        $product->is_selected = false;
+        $product->stocks_to_buy = 0;
+        $product->validation_error = '';
+        
     	return response()->json([
     		'action' => 'update',
     		'request' => $request->all(),

@@ -7002,6 +7002,116 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
@@ -7027,7 +7137,11 @@ __webpack_require__.r(__webpack_exports__);
         stocks_to_buy: '',
         sold_to: ''
       },
-      show_record_information: false
+      show_record_information: false,
+      selected_product_id_list: [],
+      show_multiple_purchase_dialog: false,
+      stock_has_negative_value: false,
+      sold_to: ''
     };
   },
   created: function created() {
@@ -7040,9 +7154,7 @@ __webpack_require__.r(__webpack_exports__);
     this.$axios.get('/api/get-products', {}).then(function (response) {
       _this.suppliers = response.data.suppliers;
 
-      for (var counter = 0; counter < response.data.products.length; counter++) {
-        _this.products.push(_this.setProductObject(response.data.products[counter]));
-      }
+      _this.handleResponse(response);
 
       _this.$store.dispatch('pageLoader', {
         display: false,
@@ -7061,6 +7173,15 @@ __webpack_require__.r(__webpack_exports__);
     'record-information': __webpack_require__(/*! ./components/record-information.vue */ "./resources/js/vue/pages/dashboard/inventory/components/record-information.vue")["default"]
   },
   methods: {
+    handleResponse: function handleResponse(response) {
+      var product_list = [];
+
+      for (var counter = 0; counter < response.data.products.length; counter++) {
+        product_list.push(this.setProductObject(response.data.products[counter]));
+      }
+
+      this.products = product_list;
+    },
     setProductObject: function setProductObject(param) {
       console.log("SET PRODUCT OBJECT: ", param);
       return {
@@ -7125,6 +7246,28 @@ __webpack_require__.r(__webpack_exports__);
       if (action == 'view record') {
         console.log("VIEW RECORD!");
         this.show_record_information = true;
+      }
+
+      if (action == 'add to purchase list') {
+        // console.log("SELECTED PRODUCT ROW: ", this.products[index]['']);
+        if (this.selected_product_id_list.includes(this.products[index]['raw_info']['id'])) {
+          this.$message({
+            message: 'Product already on the purchase list.',
+            showClose: true,
+            type: 'warning'
+          });
+        } else {
+          if (this.products[index]['total_stocks'] <= 0) {
+            this.$message({
+              message: "Cannot add products that has no stocks left available.",
+              showClose: true,
+              type: 'warning'
+            });
+          } else {
+            this.products[index]['raw_info']['is_selected'] = true;
+            this.selected_product_id_list.push(this.products[index]['raw_info']['id']);
+          }
+        }
       }
 
       console.log("SELECTED PRODUCT: ", this.selected_product);
@@ -7231,6 +7374,95 @@ __webpack_require__.r(__webpack_exports__);
       for (var key in this.purchase_form_api_validators) {
         this.purchase_form_api_validators[key] = '';
       }
+    },
+    checkIfStockToPurchaseIsValid: function checkIfStockToPurchaseIsValid() {
+      var boolean_to_return = false;
+
+      for (var counter = 0; counter < this.products.length; counter++) {
+        var stocks_to_buy = this.products[counter]['raw_info']['stocks_to_buy'];
+        var remaining_stocks = this.products[counter]['total_stocks'];
+
+        if (!isNaN(stocks_to_buy)) {
+          if (this.products[counter]['raw_info']['is_selected']) {
+            if (!stocks_to_buy || stocks_to_buy <= 0) {
+              boolean_to_return = true;
+              break;
+            } else {
+              if (stocks_to_buy > remaining_stocks) {
+                boolean_to_return = true;
+                break;
+              }
+            }
+          }
+        } else {
+          boolean_to_return = true;
+        }
+      }
+
+      console.log("BOOLEAN TO RETURN", boolean_to_return);
+      return boolean_to_return;
+    },
+    submitMultiplePurchase: function submitMultiplePurchase() {
+      var _this3 = this;
+
+      this.$store.dispatch('pageLoader', {
+        display: true,
+        message: 'Submitting Purchase List, Please Wait...'
+      });
+      this.clearApiValidators();
+      var data_to_send = {};
+      var product_list = [];
+
+      for (var counter = 0; counter < this.products.length; counter++) {
+        if (this.products[counter]['raw_info']['is_selected']) {
+          var product_object = {
+            product_id: this.products[counter]['raw_info']['id'],
+            stocks_to_buy: this.products[counter]['raw_info']['stocks_to_buy']
+          };
+          product_list.push(product_object);
+        }
+      }
+
+      data_to_send['product_list'] = product_list;
+      data_to_send['sold_to'] = this.sold_to;
+      this.$axios.post('/api/purchase-multiple-product', data_to_send).then(function (response) {
+        _this3.handleResponse(response);
+
+        _this3.selected_product_id_list = [];
+        _this3.show_multiple_purchase_dialog = false;
+        _this3.stock_has_negative_value = false;
+        _this3.sold_to = '';
+
+        _this3.$message({
+          message: 'Purchase success!',
+          showClose: true,
+          type: 'success'
+        });
+
+        _this3.$store.dispatch('pageLoader', {
+          display: false,
+          message: ''
+        });
+      })["catch"](function (error) {
+        if (error.response) {
+          if (error.response.status == 422) {
+            if (error.response.data.reason == 'validator') {
+              for (var key in error.response.data.errors) {
+                _this3.purchase_form_api_validators[key] = error.response.data.errors[key][0];
+              }
+            }
+
+            if (error.response.data.reason == 'stock_checking') {
+              _this3.handleResponse(response);
+            }
+          }
+        }
+
+        _this3.$store.dispatch('pageLoader', {
+          display: false,
+          message: ''
+        });
+      }); // purchase-multiple-product
     }
   }
 });
@@ -7326,13 +7558,110 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
       invoices: [],
       table_search: null,
-      table_date_filter: null
+      table_date_filter: null,
+      change_count: 0,
+      show_invoice_dialog: false,
+      selected_invoice: null
     };
+  },
+  watch: {
+    'selected_invoice': function selected_invoice(val) {
+      console.log("SELECTED INVOICE: ", val);
+    }
   },
   created: function created() {
     var _this = this;
@@ -7342,18 +7671,10 @@ __webpack_require__.r(__webpack_exports__);
       message: 'Fetching Invoices. Please Wait...'
     });
     this.$axios.get('/api/get-invoices', {}).then(function (response) {
-      for (var counter = 0; counter < response.data.purchases.length; counter++) {
-        var purchase_object = {
-          purchase_date: response.data.purchases[counter]['created_at'],
-          item_purchased: response.data.purchases[counter]['item_info']['information']['name'],
-          stocks_purchase: response.data.purchases[counter]['information']['stocks_purchase'],
-          price_per_stock: response.data.purchases[counter]['information']['price_per_stock'],
-          total: response.data.purchases[counter]['information']['total'],
-          action: '',
-          raw_info: response.data.purchases[counter]
-        };
+      for (var counter = 0; counter < response.data.invoices.length; counter++) {
+        var invoice_object = _this.setInvoiceObject(response.data.invoices[counter]);
 
-        _this.invoices.push(purchase_object);
+        _this.invoices.push(invoice_object);
       }
 
       _this.$store.dispatch('pageLoader', {
@@ -7370,6 +7691,24 @@ __webpack_require__.r(__webpack_exports__);
     });
   },
   methods: {
+    setInvoiceObject: function setInvoiceObject(parameter) {
+      var invoice_object = {};
+      var invoice_total = 0;
+      var invoiced_to = null;
+
+      for (var purchase_counter = 0; purchase_counter < parameter['invoice_purchases'].length; purchase_counter++) {
+        invoice_total += parameter['invoice_purchases'][purchase_counter]['purchase_info']['information']['total'];
+        invoiced_to = parameter['invoice_purchases'][purchase_counter]['purchase_info']['information']['sold_to'];
+      }
+
+      invoice_object['purchase_date'] = parameter['created_at'];
+      invoice_object['total'] = invoice_total;
+      invoice_object['invoiced_to'] = invoiced_to;
+      invoice_object['status'] = parameter['information']['status'];
+      invoice_object['action'] = '';
+      invoice_object['raw_info'] = parameter;
+      return invoice_object;
+    },
     setDate: function setDate() {
       if (this.table_date_filter) {
         var splitted_date = this.$elementHelper.formatDate(this.table_date_filter).split(' ');
@@ -7378,6 +7717,59 @@ __webpack_require__.r(__webpack_exports__);
       } else {
         this.table_date_filter = null;
         this.table_search = null;
+      }
+    },
+    voidInvoice: function voidInvoice(params) {
+      var _this2 = this;
+
+      console.log("VOID INVOICE PARAMS: ", params);
+      this.$store.dispatch('pageLoader', {
+        display: true,
+        message: 'Voiding Invoice. Please Wait...'
+      });
+      this.$axios.post('/api/void-invoice', {
+        invoice_id: params.raw_info.id
+      }).then(function (response) {
+        for (var counter = 0; counter < _this2.invoices.length; counter++) {
+          if (params.raw_info.id == _this2.invoices[counter]['raw_info']['id']) {
+            var invoice_object = _this2.setInvoiceObject(response.data.invoice_info);
+
+            _this2.invoices[counter] = invoice_object;
+            console.log("YAWA!");
+            _this2.change_count++;
+
+            _this2.$message({
+              message: 'Invoice successfully voided.',
+              showClose: true,
+              type: 'success'
+            });
+
+            break;
+          }
+        }
+
+        _this2.$store.dispatch('pageLoader', {
+          display: false,
+          message: ''
+        });
+      })["catch"](function (error) {
+        console.log(error);
+
+        _this2.$store.dispatch('pageLoader', {
+          display: false,
+          message: ''
+        });
+      });
+    },
+    tableRowClassName: function tableRowClassName(_ref) {
+      var row = _ref.row,
+          rowIndex = _ref.rowIndex;
+      console.log("ROW CLASS NAME: ", row);
+
+      if (row.status == 'void') {
+        return 'nullify-el-hover bg-opacity-danger';
+      } else {
+        return 'nullify-el-hover bg-opacity-success';
       }
     }
   }
@@ -96530,7 +96922,7 @@ var render = function() {
       _c("div", { staticClass: "row m-0" }, [
         _c(
           "div",
-          { staticClass: "col-lg-12 px-0" },
+          { staticClass: "col-6 px-0" },
           [
             _c(
               "el-button",
@@ -96547,8 +96939,41 @@ var render = function() {
                 _c("i", { staticClass: "el-icon-circle-plus" }),
                 _vm._v(" Add New Product / Item\n\t\t\t")
               ]
-            ),
-            _vm._v(" "),
+            )
+          ],
+          1
+        ),
+        _vm._v(" "),
+        _c(
+          "div",
+          { staticClass: "col-6 px-0 text-right" },
+          [
+            _c(
+              "el-button",
+              {
+                attrs: { type: "primary", size: "small", plain: "" },
+                on: {
+                  click: function($event) {
+                    _vm.show_multiple_purchase_dialog = true
+                  }
+                }
+              },
+              [
+                _vm._v(
+                  "\n\t\t\t\tView Products On Purchase List (" +
+                    _vm._s(_vm.selected_product_id_list.length) +
+                    ")\n\t\t\t"
+                )
+              ]
+            )
+          ],
+          1
+        ),
+        _vm._v(" "),
+        _c(
+          "div",
+          { staticClass: "col-lg-12 px-0" },
+          [
             _c("hr"),
             _vm._v(" "),
             _c(
@@ -96691,7 +97116,22 @@ var render = function() {
                                     },
                                     [
                                       _vm._v(
-                                        "\n\t\t\t\t\t\t\t\t\tCreate Purchase\n\t\t\t\t\t\t\t\t"
+                                        "\n\t\t\t\t\t\t\t\t\tCreate Single Purchase\n\t\t\t\t\t\t\t\t"
+                                      )
+                                    ]
+                                  ),
+                                  _vm._v(" "),
+                                  _c(
+                                    "el-dropdown-item",
+                                    {
+                                      attrs: {
+                                        icon: "el-icon-sell",
+                                        command: "add to purchase list"
+                                      }
+                                    },
+                                    [
+                                      _vm._v(
+                                        "\n\t\t\t\t\t\t\t\t\tAdd To Purchase List\n\t\t\t\t\t\t\t\t"
                                       )
                                     ]
                                   ),
@@ -97196,6 +97636,259 @@ var render = function() {
           )
         ],
         1
+      ),
+      _vm._v(" "),
+      _c(
+        "el-dialog",
+        {
+          attrs: {
+            title: "Purchase List",
+            visible: _vm.show_multiple_purchase_dialog,
+            width: "90%",
+            "show-close": false,
+            "close-on-click-modal": false,
+            "close-on-press-escape": false
+          },
+          on: {
+            "update:visible": function($event) {
+              _vm.show_multiple_purchase_dialog = $event
+            }
+          }
+        },
+        [
+          _c("div", [
+            _vm.checkIfStockToPurchaseIsValid()
+              ? _c("div", { staticClass: "alert alert-danger mb-3" }, [
+                  _vm._v(
+                    "\n\t\t\t\tPlease make sure your purchase list has valid values of stocks to purchase.\n\t\t\t"
+                  )
+                ])
+              : _vm._e(),
+            _vm._v(" "),
+            _c("div", { staticClass: "row m-0" }, [
+              _c(
+                "div",
+                { staticClass: "col-5" },
+                [
+                  _c(
+                    "el-input",
+                    {
+                      attrs: { size: "small" },
+                      model: {
+                        value: _vm.sold_to,
+                        callback: function($$v) {
+                          _vm.sold_to = $$v
+                        },
+                        expression: "sold_to"
+                      }
+                    },
+                    [
+                      _c("template", { slot: "prepend" }, [
+                        _vm._v("\n\t\t\t\t\t\t\tSold To\n\t\t\t\t\t\t")
+                      ])
+                    ],
+                    2
+                  ),
+                  _vm._v(" "),
+                  _c("p", { staticClass: "text-danger" }, [
+                    _c("small", [
+                      _vm._v(_vm._s(_vm.purchase_form_api_validators.sold_to))
+                    ])
+                  ])
+                ],
+                1
+              ),
+              _vm._v(" "),
+              _c("div", { staticClass: "col-12" }, [_c("hr")]),
+              _vm._v(" "),
+              _c("div", { staticClass: "col-2" }, [
+                _vm._v("\n\t\t\t\t\tItem Name\n\t\t\t\t")
+              ]),
+              _vm._v(" "),
+              _c("div", { staticClass: "col-2" }, [
+                _vm._v("\n\t\t\t\t\tCurrent Price\n\t\t\t\t")
+              ]),
+              _vm._v(" "),
+              _c("div", { staticClass: "col-2" }, [
+                _vm._v("\n\t\t\t\t\tRemaining Stocks\n\t\t\t\t")
+              ]),
+              _vm._v(" "),
+              _c("div", { staticClass: "col-2" }, [
+                _vm._v("\n\t\t\t\t\tStocks To Purchase\n\t\t\t\t")
+              ]),
+              _vm._v(" "),
+              _c("div", { staticClass: "col-2" }, [
+                _vm._v("\n\t\t\t\t\tPayable Amount\n\t\t\t\t")
+              ]),
+              _vm._v(" "),
+              _c("div", { staticClass: "col-2" })
+            ]),
+            _vm._v(" "),
+            _vm.selected_product_id_list.length > 0
+              ? _c(
+                  "div",
+                  _vm._l(_vm.products, function(product, product_index) {
+                    return _c("div", [
+                      _c(
+                        "div",
+                        {
+                          class: {
+                            "alert alert-danger p-0 my-3":
+                              product.raw_info.stocks_to_buy >
+                              product.total_stocks
+                          }
+                        },
+                        [
+                          product.raw_info.is_selected
+                            ? _c("div", { staticClass: "row m-0 py-3" }, [
+                                _c("div", { staticClass: "col-2 pt-2" }, [
+                                  _vm._v(
+                                    "\n\t\t\t\t\t\t\t\t" +
+                                      _vm._s(
+                                        product.raw_info.information.name
+                                      ) +
+                                      "\n\t\t\t\t\t\t\t"
+                                  )
+                                ]),
+                                _vm._v(" "),
+                                _c("div", { staticClass: "col-2 pt-2" }, [
+                                  _vm._v(
+                                    "\n\t\t\t\t\t\t\t\t" +
+                                      _vm._s(
+                                        _vm._f("currency")(
+                                          product.raw_info.information.price,
+                                          "₱"
+                                        )
+                                      ) +
+                                      "\n\t\t\t\t\t\t\t"
+                                  )
+                                ]),
+                                _vm._v(" "),
+                                _c("div", { staticClass: "col-2 pt-2" }, [
+                                  _vm._v(
+                                    "\n\t\t\t\t\t\t\t\t" +
+                                      _vm._s(product.total_stocks) +
+                                      "\n\t\t\t\t\t\t\t"
+                                  )
+                                ]),
+                                _vm._v(" "),
+                                _c(
+                                  "div",
+                                  { staticClass: "col-2" },
+                                  [
+                                    _c("el-input", {
+                                      attrs: { size: "small", type: "number" },
+                                      on: {
+                                        change: function($event) {
+                                          return _vm.checkIfStockToPurchaseIsValid()
+                                        }
+                                      },
+                                      model: {
+                                        value: product.raw_info.stocks_to_buy,
+                                        callback: function($$v) {
+                                          _vm.$set(
+                                            product.raw_info,
+                                            "stocks_to_buy",
+                                            $$v
+                                          )
+                                        },
+                                        expression:
+                                          "product.raw_info.stocks_to_buy"
+                                      }
+                                    })
+                                  ],
+                                  1
+                                ),
+                                _vm._v(" "),
+                                _c("div", { staticClass: "col-2 pt-2" }, [
+                                  _vm._v(
+                                    "\n\t\t\t\t\t\t\t\t" +
+                                      _vm._s(
+                                        _vm._f("currency")(
+                                          product.raw_info.information.price *
+                                            product.raw_info.stocks_to_buy,
+                                          "₱"
+                                        )
+                                      ) +
+                                      "\n\t\t\t\t\t\t\t"
+                                  )
+                                ]),
+                                _vm._v(" "),
+                                _c("div", { staticClass: "col-2 text-right" }, [
+                                  _c(
+                                    "a",
+                                    {
+                                      staticClass: "text-danger",
+                                      staticStyle: {
+                                        "font-size": "25px",
+                                        float: "right",
+                                        "margin-top": "-3px"
+                                      },
+                                      attrs: { href: "javascript:void(0)" }
+                                    },
+                                    [
+                                      _c("i", {
+                                        staticClass: "fa fa-fw el-icon-delete"
+                                      })
+                                    ]
+                                  )
+                                ])
+                              ])
+                            : _vm._e()
+                        ]
+                      )
+                    ])
+                  }),
+                  0
+                )
+              : _c("div", { staticClass: "text-center py-3" }, [
+                  _c("label", [_vm._v("No Selected Product(s) To Purchase...")])
+                ])
+          ]),
+          _vm._v(" "),
+          _c(
+            "span",
+            {
+              staticClass: "dialog-footer",
+              attrs: { slot: "footer" },
+              slot: "footer"
+            },
+            [
+              _c(
+                "el-button",
+                {
+                  attrs: {
+                    size: "small",
+                    type: "success",
+                    disabled:
+                      _vm.selected_product_id_list.length <= 0 ||
+                      _vm.checkIfStockToPurchaseIsValid()
+                  },
+                  on: {
+                    click: function($event) {
+                      return _vm.submitMultiplePurchase()
+                    }
+                  }
+                },
+                [_vm._v("\n\t\t\t\tPurchase Items\n\t\t\t")]
+              ),
+              _vm._v(" "),
+              _c(
+                "el-button",
+                {
+                  attrs: { size: "small", type: "danger" },
+                  on: {
+                    click: function($event) {
+                      _vm.show_multiple_purchase_dialog = false
+                    }
+                  }
+                },
+                [_vm._v("\n\t\t\t\tClose\n\t\t\t")]
+              )
+            ],
+            1
+          )
+        ]
       )
     ],
     1
@@ -97223,151 +97916,426 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", { attrs: { id: "invoices-page-component" } }, [
-    _c("div", { staticClass: "row m-0" }, [
-      _c(
-        "div",
-        { staticClass: "col-lg-4" },
-        [
-          _c("el-date-picker", {
-            attrs: {
-              type: "date",
-              placeholder: "Select Date Here To Filter Results...",
-              size: "small"
-            },
-            on: {
-              change: function($event) {
-                return _vm.setDate()
-              }
-            },
-            model: {
-              value: _vm.table_date_filter,
-              callback: function($$v) {
-                _vm.table_date_filter = $$v
+  return _c(
+    "div",
+    { attrs: { id: "invoices-page-component" } },
+    [
+      _c("div", { staticClass: "row m-0" }, [
+        _c(
+          "div",
+          { staticClass: "col-lg-4" },
+          [
+            _c("el-date-picker", {
+              attrs: {
+                type: "date",
+                placeholder: "Select Date Here To Filter Results...",
+                size: "small"
               },
-              expression: "table_date_filter"
-            }
-          })
-        ],
-        1
-      ),
+              on: {
+                change: function($event) {
+                  return _vm.setDate()
+                }
+              },
+              model: {
+                value: _vm.table_date_filter,
+                callback: function($$v) {
+                  _vm.table_date_filter = $$v
+                },
+                expression: "table_date_filter"
+              }
+            })
+          ],
+          1
+        ),
+        _vm._v(" "),
+        _c(
+          "div",
+          {
+            key: "invoice-container-" + _vm.change_count,
+            staticClass: "col-12"
+          },
+          [
+            _c("hr"),
+            _vm._v(" "),
+            _c(
+              "el-table",
+              {
+                staticStyle: { width: "100%" },
+                attrs: {
+                  "row-class-name": _vm.tableRowClassName,
+                  data: _vm.invoices.filter(function(data) {
+                    return (
+                      !_vm.table_search ||
+                      data.purchase_date.includes(_vm.table_search)
+                    )
+                  })
+                }
+              },
+              [
+                _c("el-table-column", {
+                  attrs: { label: "Purchase Date", prop: "purchase_date" },
+                  scopedSlots: _vm._u([
+                    {
+                      key: "default",
+                      fn: function(scope) {
+                        return [
+                          _vm._v(
+                            "\n\t\t\t\t\t\t" +
+                              _vm._s(
+                                _vm._f("moment")(
+                                  scope.row.purchase_date,
+                                  "MMMM Do YYYY"
+                                )
+                              ) +
+                              "\n\t\t\t\t\t"
+                          )
+                        ]
+                      }
+                    }
+                  ])
+                }),
+                _vm._v(" "),
+                _c("el-table-column", {
+                  attrs: {
+                    label: "Invoiced To",
+                    prop: "invoiced_to",
+                    width: "300"
+                  }
+                }),
+                _vm._v(" "),
+                _c("el-table-column", {
+                  attrs: { label: "Total", prop: "total" },
+                  scopedSlots: _vm._u([
+                    {
+                      key: "default",
+                      fn: function(scope) {
+                        return [
+                          _vm._v(
+                            "\n\t\t\t\t\t\t" +
+                              _vm._s(_vm._f("currency")(scope.row.total, "₱")) +
+                              "\n\t\t\t\t\t"
+                          )
+                        ]
+                      }
+                    }
+                  ])
+                }),
+                _vm._v(" "),
+                _c("el-table-column", {
+                  attrs: { label: "Status", prop: "status" },
+                  scopedSlots: _vm._u([
+                    {
+                      key: "default",
+                      fn: function(scope) {
+                        return [
+                          _vm._v(
+                            "\n\t\t\t\t\t\t" +
+                              _vm._s(_vm._f("capitalize")(scope.row.status)) +
+                              "\n\t\t\t\t\t"
+                          )
+                        ]
+                      }
+                    }
+                  ])
+                }),
+                _vm._v(" "),
+                _c("el-table-column", {
+                  attrs: { label: "", prop: "action", width: "300" },
+                  scopedSlots: _vm._u([
+                    {
+                      key: "default",
+                      fn: function(scope) {
+                        return [
+                          _c(
+                            "div",
+                            { staticClass: "w-100 text-right" },
+                            [
+                              _c(
+                                "el-button",
+                                {
+                                  attrs: {
+                                    type: "info",
+                                    size: "small",
+                                    plain: ""
+                                  },
+                                  on: {
+                                    click: function($event) {
+                                      _vm.show_invoice_dialog = true
+                                      _vm.selected_invoice = scope.row
+                                    }
+                                  }
+                                },
+                                [
+                                  _vm._v(
+                                    "\n\t\t\t\t\t\t\t\tInvoice Info\n\t\t\t\t\t\t\t"
+                                  )
+                                ]
+                              ),
+                              _vm._v(" "),
+                              scope.row.status != "void"
+                                ? _c(
+                                    "el-button",
+                                    {
+                                      attrs: {
+                                        type: "danger",
+                                        size: "small",
+                                        plain: ""
+                                      },
+                                      on: {
+                                        click: function($event) {
+                                          return _vm.voidInvoice(scope.row)
+                                        }
+                                      }
+                                    },
+                                    [
+                                      _vm._v(
+                                        "\n\t\t\t\t\t\t\t\tVoid Invoice\n\t\t\t\t\t\t\t"
+                                      )
+                                    ]
+                                  )
+                                : _vm._e()
+                            ],
+                            1
+                          )
+                        ]
+                      }
+                    }
+                  ])
+                })
+              ],
+              1
+            )
+          ],
+          1
+        )
+      ]),
       _vm._v(" "),
       _c(
-        "div",
-        { staticClass: "col-12" },
+        "el-dialog",
+        {
+          attrs: {
+            title: "Invoice Information",
+            visible: _vm.show_invoice_dialog,
+            width: "70%"
+          },
+          on: {
+            "update:visible": function($event) {
+              _vm.show_invoice_dialog = $event
+            }
+          }
+        },
         [
-          _c("hr"),
-          _vm._v(" "),
-          _c(
-            "el-table",
-            {
-              staticStyle: { width: "100%" },
-              attrs: {
-                data: _vm.invoices.filter(function(data) {
-                  return (
-                    !_vm.table_search ||
-                    data.purchase_date.includes(_vm.table_search)
-                  )
-                })
-              }
-            },
-            [
-              _c("el-table-column", {
-                attrs: { label: "Purchase Date", prop: "purchase_date" },
-                scopedSlots: _vm._u([
-                  {
-                    key: "default",
-                    fn: function(scope) {
-                      return [
+          _vm.selected_invoice
+            ? _c(
+                "div",
+                [
+                  _c("div", { staticClass: "row m-0" }, [
+                    _c("div", { staticClass: "col-12" }, [_c("hr")]),
+                    _vm._v(" "),
+                    _c(
+                      "div",
+                      {
+                        staticClass: "col-12",
+                        staticStyle: { "font-size": "15px !important" }
+                      },
+                      [
+                        _c("strong", [_vm._v("Invoice Date:")]),
                         _vm._v(
-                          "\n\t\t\t\t\t\t" +
+                          " " +
                             _vm._s(
                               _vm._f("moment")(
-                                scope.row.purchase_date,
+                                _vm.selected_invoice.purchase_date,
                                 "MMMM Do YYYY"
                               )
                             ) +
                             "\n\t\t\t\t\t"
-                        )
+                        ),
+                        _c("hr")
                       ]
-                    }
-                  }
-                ])
-              }),
-              _vm._v(" "),
-              _c("el-table-column", {
-                attrs: { label: "Item Purchased", prop: "item_purchased" }
-              }),
-              _vm._v(" "),
-              _c("el-table-column", {
-                attrs: { label: "Stocks Purchased", prop: "stocks_purchase" }
-              }),
-              _vm._v(" "),
-              _c("el-table-column", {
-                attrs: { label: "Price Per Stock", prop: "price_per_stock" },
-                scopedSlots: _vm._u([
-                  {
-                    key: "default",
-                    fn: function(scope) {
-                      return [
+                    ),
+                    _vm._v(" "),
+                    _c(
+                      "div",
+                      {
+                        staticClass: "col-12",
+                        staticStyle: { "font-size": "15px !important" }
+                      },
+                      [
+                        _c("strong", [_vm._v("Invoiced To:")]),
                         _vm._v(
-                          "\n\t\t\t\t\t\t" +
-                            _vm._s(
-                              _vm._f("currency")(scope.row.price_per_stock, "₱")
-                            ) +
+                          " " +
+                            _vm._s(_vm.selected_invoice.invoiced_to) +
                             "\n\t\t\t\t\t"
-                        )
+                        ),
+                        _c("hr")
                       ]
-                    }
-                  }
-                ])
-              }),
-              _vm._v(" "),
-              _c("el-table-column", {
-                attrs: { label: "Total", prop: "total" },
-                scopedSlots: _vm._u([
-                  {
-                    key: "default",
-                    fn: function(scope) {
-                      return [
-                        _vm._v(
-                          "\n\t\t\t\t\t\t" +
-                            _vm._s(_vm._f("currency")(scope.row.total, "₱")) +
-                            "\n\t\t\t\t\t"
-                        )
-                      ]
-                    }
-                  }
-                ])
-              }),
-              _vm._v(" "),
-              _c("el-table-column", {
-                attrs: { label: "Action", prop: "action" },
-                scopedSlots: _vm._u([
-                  {
-                    key: "default",
-                    fn: function(scope) {
-                      return [
+                    ),
+                    _vm._v(" "),
+                    _c(
+                      "div",
+                      {
+                        staticClass: "col-12",
+                        staticStyle: { "font-size": "15px !important" }
+                      },
+                      [
                         _c(
-                          "el-button",
+                          "span",
                           {
-                            attrs: { type: "danger", size: "small", plain: "" }
+                            staticClass: "badge",
+                            class: {
+                              "badge-danger":
+                                _vm.selected_invoice.status == "void",
+                              "badge-success":
+                                _vm.selected_invoice.status != "void"
+                            }
                           },
-                          [_vm._v("\n\t\t\t\t\t\t\tVoid Invoice\n\t\t\t\t\t\t")]
-                        )
+                          [
+                            _vm._v(
+                              "\n\t\t\t\t\t\t" +
+                                _vm._s(
+                                  _vm._f("uppercase")(
+                                    _vm.selected_invoice.status
+                                  )
+                                ) +
+                                "\n\t\t\t\t\t"
+                            )
+                          ]
+                        ),
+                        _vm._v(" "),
+                        _c("hr")
                       ]
+                    )
+                  ]),
+                  _vm._v(" "),
+                  _c("div", { staticClass: "row m-0" }, [
+                    _c("div", { staticClass: "col-3" }, [
+                      _c("strong", [_vm._v("Product Name")])
+                    ]),
+                    _vm._v(" "),
+                    _c("div", { staticClass: "col-3" }, [
+                      _c("strong", [_vm._v("Stocks Purchased")])
+                    ]),
+                    _vm._v(" "),
+                    _c("div", { staticClass: "col-3" }, [
+                      _c("strong", [_vm._v("Price Per Stock")])
+                    ]),
+                    _vm._v(" "),
+                    _c("div", { staticClass: "col-3" }, [
+                      _c("strong", [_vm._v("Total")])
+                    ]),
+                    _vm._v(" "),
+                    _c("div", { staticClass: "col-12" }, [_c("hr")])
+                  ]),
+                  _vm._v(" "),
+                  _vm._l(
+                    _vm.selected_invoice.raw_info.invoice_purchases,
+                    function(invoice_purchase) {
+                      return _c("div", { staticClass: "row m-0 py-2" }, [
+                        _c("div", { staticClass: "col-3" }, [
+                          _vm._v(
+                            "\n\t\t\t\t\t" +
+                              _vm._s(
+                                invoice_purchase.purchase_info.item_info
+                                  .information.name
+                              ) +
+                              "\n\t\t\t\t"
+                          )
+                        ]),
+                        _vm._v(" "),
+                        _c("div", { staticClass: "col-3" }, [
+                          _vm._v(
+                            "\n\t\t\t\t\t" +
+                              _vm._s(
+                                invoice_purchase.purchase_info.information
+                                  .stocks_purchase
+                              ) +
+                              "\n\t\t\t\t"
+                          )
+                        ]),
+                        _vm._v(" "),
+                        _c("div", { staticClass: "col-3" }, [
+                          _vm._v(
+                            "\n\t\t\t\t\t" +
+                              _vm._s(
+                                _vm._f("currency")(
+                                  invoice_purchase.purchase_info.information
+                                    .price_per_stock,
+                                  "₱"
+                                )
+                              ) +
+                              "\n\t\t\t\t"
+                          )
+                        ]),
+                        _vm._v(" "),
+                        _c("div", { staticClass: "col-3" }, [
+                          _vm._v(
+                            "\n\t\t\t\t\t" +
+                              _vm._s(
+                                _vm._f("currency")(
+                                  invoice_purchase.purchase_info.information
+                                    .stocks_purchase *
+                                    invoice_purchase.purchase_info.information
+                                      .price_per_stock,
+                                  "₱"
+                                )
+                              ) +
+                              "\n\t\t\t\t"
+                          )
+                        ]),
+                        _vm._v(" "),
+                        _c("div", { staticClass: "col-12" }, [_c("hr")])
+                      ])
+                    }
+                  ),
+                  _vm._v(" "),
+                  _c("div", { staticClass: "row m-0 py-2" }, [
+                    _c("div", { staticClass: "col-6" }, [
+                      _c("strong", [_vm._v("TOTAL:")])
+                    ]),
+                    _vm._v(" "),
+                    _c("div", { staticClass: "col-6 text-right" }, [
+                      _vm._v(
+                        "\n\t\t\t\t\t" +
+                          _vm._s(
+                            _vm._f("currency")(_vm.selected_invoice.total, "₱")
+                          ) +
+                          "\n\t\t\t\t"
+                      )
+                    ])
+                  ])
+                ],
+                2
+              )
+            : _vm._e(),
+          _vm._v(" "),
+          _c(
+            "span",
+            {
+              staticClass: "dialog-footer",
+              attrs: { slot: "footer" },
+              slot: "footer"
+            },
+            [
+              _c(
+                "el-button",
+                {
+                  attrs: { size: "small" },
+                  on: {
+                    click: function($event) {
+                      _vm.show_invoice_dialog = false
                     }
                   }
-                ])
-              })
+                },
+                [_vm._v("\n\t\t\t\tClose\n\t\t\t")]
+              )
             ],
             1
           )
-        ],
-        1
+        ]
       )
-    ])
-  ])
+    ],
+    1
+  )
 }
 var staticRenderFns = []
 render._withStripped = true

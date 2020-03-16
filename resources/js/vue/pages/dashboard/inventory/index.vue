@@ -1,10 +1,17 @@
 <template>
 	<div id="inventory-page-component">
 		<div class="row m-0">
-			<div class="col-lg-12 px-0">
+			<div class="col-6 px-0">
 				<el-button type="info" size="small" v-on:click="show_product_form = true; product_form_action = 'create'">
 					<i class="el-icon-circle-plus"></i> Add New Product / Item
 				</el-button>
+			</div>
+			<div class="col-6 px-0 text-right">
+				<el-button type="primary" size="small" plain v-on:click="show_multiple_purchase_dialog = true;">
+					View Products On Purchase List ({{ selected_product_id_list.length }})
+				</el-button>
+			</div>
+			<div class="col-lg-12 px-0">
 				<hr>
 
 				<el-table
@@ -74,7 +81,10 @@
 								</el-button>
 								<el-dropdown-menu slot="dropdown">
 									<el-dropdown-item icon="el-icon-notebook-1" command="create purchase">
-										Create Purchase
+										Create Single Purchase
+									</el-dropdown-item>
+									<el-dropdown-item icon="el-icon-sell" command="add to purchase list">
+										Add To Purchase List
 									</el-dropdown-item>
 									<el-dropdown-item icon="el-icon-edit" command="update">
 										Update
@@ -267,6 +277,106 @@
 			</span>
 		</el-dialog>
 		<!-- ---------------------------------------------------------------------------------- -->
+
+
+
+		<!-- ---------------------------------------------------------------------------------- -->
+		<!-- MULTIPLE PRODUCTS TO BUY DIALOG -->
+		<!-- ---------------------------------------------------------------------------------- -->
+		<el-dialog 
+			title="Purchase List" 
+			:visible.sync="show_multiple_purchase_dialog" 
+			width="90%" 
+			:show-close="false" 
+			:close-on-click-modal="false" 
+			:close-on-press-escape="false"
+		>
+			<div>
+				<div class="alert alert-danger mb-3" v-if="checkIfStockToPurchaseIsValid()">
+					Please make sure your purchase list has valid values of stocks to purchase.
+				</div>
+
+				<div class="row m-0">
+					<div class="col-5">
+						<el-input v-model="sold_to" size="small">
+							<template slot="prepend">
+								Sold To
+							</template>
+						</el-input>
+						<p class="text-danger"><small>{{ purchase_form_api_validators.sold_to }}</small></p>
+					</div>
+
+					<div class="col-12">
+						<hr>
+					</div>
+
+					<div class="col-2">
+						Item Name
+					</div>
+					<div class="col-2">
+						Current Price
+					</div>
+					<div class="col-2">
+						Remaining Stocks
+					</div>
+					<div class="col-2">
+						Stocks To Purchase
+					</div>
+					<div class="col-2">
+						Payable Amount
+					</div>
+					<div class="col-2"></div>
+				</div>
+
+				<div v-if="selected_product_id_list.length > 0">
+					<div v-for="(product, product_index) in products">
+						<div v-bind:class="{
+							'alert alert-danger p-0 my-3': product.raw_info.stocks_to_buy > product.total_stocks
+						}">
+							<div class="row m-0 py-3" v-if="product.raw_info.is_selected">
+								<div class="col-2 pt-2">
+									{{ product.raw_info.information.name }}
+								</div>
+								<div class="col-2 pt-2">
+									{{ product.raw_info.information.price | currency('₱') }}
+								</div>
+								<div class="col-2 pt-2">
+									{{ product.total_stocks }}
+								</div>
+								<div class="col-2">
+									<el-input size="small" type="number" v-model="product.raw_info.stocks_to_buy" v-on:change="checkIfStockToPurchaseIsValid()"></el-input>
+								</div>
+								<div class="col-2 pt-2">
+									{{ product.raw_info.information.price * product.raw_info.stocks_to_buy | currency('₱') }}
+								</div>
+								<div class="col-2 text-right">
+									<a href="javascript:void(0)" class="text-danger" style="font-size: 25px; float: right; margin-top: -3px;">
+										<i class="fa fa-fw el-icon-delete"></i>
+									</a>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div v-else class="text-center py-3">
+					<label>No Selected Product(s) To Purchase...</label>
+				</div>
+			</div>
+
+			<!-- <h1>SELECTED PRODUCT ID LIST LENGTH: {{ selected_product_id_list.length }}</h1>
+			<hr>
+			<h1>CHECK IF STOCK PURCHASE IS VALID: {{ checkIfStockToPurchaseIsValid() }}</h1> -->
+
+			<span slot="footer" class="dialog-footer">
+				<el-button size="small" type="success" :disabled="selected_product_id_list.length <= 0 || checkIfStockToPurchaseIsValid()" v-on:click="submitMultiplePurchase()">
+					Purchase Items
+				</el-button>
+
+				<el-button size="small" type="danger" v-on:click="show_multiple_purchase_dialog = false">
+					Close
+				</el-button>
+			</span>
+		</el-dialog>
 	</div>
 </template>
 <script type="text/javascript">
@@ -299,16 +409,21 @@
 					sold_to: ''
 				},
 
-				show_record_information: false
+				show_record_information: false,
+
+				selected_product_id_list: [],
+				show_multiple_purchase_dialog: false,
+				stock_has_negative_value: false,
+				sold_to: ''
 			}
 		},
 		created(){
 			this.$store.dispatch('pageLoader', { display: true, message: 'Retrieving Products List, Please Wait...' });
 			this.$axios.get('/api/get-products', {}).then((response) => {
 				this.suppliers = response.data.suppliers;
-				for(let counter = 0; counter < response.data.products.length; counter++){
-					this.products.push(this.setProductObject(response.data.products[counter]));
-				}
+				this.handleResponse(response);
+				
+
 				this.$store.dispatch('pageLoader', { display: false, message: '' });
 			}).catch((error) => {
 				this.$store.dispatch('pageLoader', { display: false, message: '' });
@@ -320,6 +435,16 @@
 			'record-information': require('./components/record-information.vue').default
 		},
 		methods: {
+			handleResponse(response){
+				let product_list = [];
+
+				for(let counter = 0; counter < response.data.products.length; counter++){
+					product_list.push(this.setProductObject(response.data.products[counter]));
+				}
+
+				this.products = product_list;
+			},
+
 			setProductObject(param){
 				console.log("SET PRODUCT OBJECT: ", param);
 
@@ -382,6 +507,31 @@
 					console.log("VIEW RECORD!");
 					this.show_record_information = true;
 				}
+				if(action == 'add to purchase list'){
+					// console.log("SELECTED PRODUCT ROW: ", this.products[index]['']);
+					if(this.selected_product_id_list.includes(this.products[index]['raw_info']['id'])){
+						this.$message({
+				          	message: 'Product already on the purchase list.',
+				          	showClose: true,
+				          	type: 'warning'
+				        });
+					}
+					else{
+						if(this.products[index]['total_stocks'] <= 0){
+							this.$message({
+					          	message: "Cannot add products that has no stocks left available.",
+					          	showClose: true,
+					          	type: 'warning'
+					        });
+						}
+						else{
+							this.products[index]['raw_info']['is_selected'] = true;
+							this.selected_product_id_list.push(this.products[index]['raw_info']['id']);
+						}
+							
+					}
+				}
+
 
 				console.log("SELECTED PRODUCT: ", this.selected_product);
 			},
@@ -475,6 +625,90 @@
 				for(let key in this.purchase_form_api_validators){
 					this.purchase_form_api_validators[key] = '';
 				}
+			},
+
+			checkIfStockToPurchaseIsValid(){
+				let boolean_to_return = false;
+
+				for(let counter = 0; counter < this.products.length; counter++){
+					let stocks_to_buy = this.products[counter]['raw_info']['stocks_to_buy'];
+					let remaining_stocks = this.products[counter]['total_stocks'];
+
+					if(!isNaN(stocks_to_buy)){
+						if(this.products[counter]['raw_info']['is_selected']){
+							if(!stocks_to_buy || stocks_to_buy <= 0){
+								boolean_to_return = true;
+								break;
+							}
+							else{
+								if(stocks_to_buy > remaining_stocks){
+									boolean_to_return = true;
+									break;
+								}
+							}	
+						}
+					}
+					else{
+						boolean_to_return = true;
+					}
+				}
+
+				console.log("BOOLEAN TO RETURN", boolean_to_return);
+				return boolean_to_return;
+			},
+
+			submitMultiplePurchase(){
+				this.$store.dispatch('pageLoader', { display: true, message: 'Submitting Purchase List, Please Wait...' });
+
+				this.clearApiValidators();
+
+				let data_to_send = {};
+				let product_list = [];
+
+				for(let counter = 0; counter < this.products.length; counter++){
+					if(this.products[counter]['raw_info']['is_selected']){
+						let product_object = {
+							product_id: this.products[counter]['raw_info']['id'],
+							stocks_to_buy: this.products[counter]['raw_info']['stocks_to_buy']
+						};
+
+						product_list.push(product_object);
+					}
+				}
+
+				data_to_send['product_list'] = product_list;
+				data_to_send['sold_to'] = this.sold_to;
+
+				this.$axios.post('/api/purchase-multiple-product', data_to_send).then((response) => {
+					this.handleResponse(response);
+
+					this.selected_product_id_list = [];
+					this.show_multiple_purchase_dialog = false;
+					this.stock_has_negative_value = false;
+					this.sold_to = '';
+
+					this.$message({
+			          	message: 'Purchase success!',
+			          	showClose: true,
+			          	type: 'success'
+			        });
+					this.$store.dispatch('pageLoader', { display: false, message: '' });						
+				}).catch((error) => {
+					if(error.response){
+						if(error.response.status == 422){
+							if(error.response.data.reason == 'validator'){
+								for(let key in error.response.data.errors){
+									this.purchase_form_api_validators[key] = error.response.data.errors[key][0];
+								}
+							}
+							if(error.response.data.reason == 'stock_checking'){
+								this.handleResponse(response);
+							}
+						}
+					}
+					this.$store.dispatch('pageLoader', { display: false, message: '' });
+				});
+				// purchase-multiple-product
 			}
 		}
 	}

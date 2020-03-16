@@ -116,6 +116,7 @@ use Illuminate\Http\Request;
 // |--------------------------------------------------------------------------
 	Route::group(['middleware' => ['auth:api']], function (){
 		Route::post('create-product-purchase', 'PurchasesController@create');
+		Route::post('purchase-multiple-product', 'MultiplePurchaseController@create');
 	});
 // |--------------------------------------------------------------------------
 
@@ -136,6 +137,7 @@ use Illuminate\Http\Request;
 // |--------------------------------------------------------------------------
 	Route::group(['middleware' => ['auth:api']], function(){
 		Route::get('get-invoices', 'InvoicesController@index');
+		Route::post('void-invoice', 'InvoicesController@delete');
 	});
 // |--------------------------------------------------------------------------
 
