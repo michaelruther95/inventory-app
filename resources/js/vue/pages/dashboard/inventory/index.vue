@@ -80,9 +80,9 @@
 									Actions <i class="el-icon-arrow-down"></i>
 								</el-button>
 								<el-dropdown-menu slot="dropdown">
-									<el-dropdown-item icon="el-icon-notebook-1" command="create purchase">
+									<!-- <el-dropdown-item icon="el-icon-notebook-1" command="create purchase">
 										Create Single Purchase
-									</el-dropdown-item>
+									</el-dropdown-item> -->
 									<el-dropdown-item icon="el-icon-sell" command="add to purchase list">
 										Add To Purchase List
 									</el-dropdown-item>
