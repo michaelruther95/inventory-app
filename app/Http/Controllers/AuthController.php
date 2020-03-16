@@ -9,8 +9,11 @@ use App\ConsultationFee;
 use App\Http\Requests\AuthRequest;
 use App\Helpers\RandomStringGeneratorHelper;
 use App\Http\Requests\AccountSettingsRequest;
+use App\Mail\ForgotPassword;
 use DB;
 use Auth;
+use Mail;
+use Validator;
 
 class AuthController extends Controller
 {
@@ -65,6 +68,12 @@ class AuthController extends Controller
     				$resetRecord->token = $randomString;
     				$resetRecord->created_at = now();
     				$resetRecord->save();
+
+                    $mail_params = [
+                        'url' => env('APP_URL').'/reset-password/'.$randomString
+                    ];
+
+                    Mail::to($request->email_address)->send(new ForgotPassword($mail_params));
     			}
     		}
 
@@ -122,5 +131,42 @@ class AuthController extends Controller
 			'action' => 'logout'
 		]);
 		// -------------------------------------------------------------
+    }
+
+    public function reset(Request $request){
+        $validator = Validator::make($request->all(), [
+                        'email_address' => 'required|email|exists:password_resets,email',
+                        'new_password' => 'required|min:6',
+                        'confirm_new_password' => 'required|min:6|same:new_password',
+                        'token' => 'required|exists:password_resets,token'
+                    ]);
+
+        if($validator->fails()){
+            return response()->json([
+                'errors' => $validator->messages()
+            ], 422);
+        }
+
+        $check_record = PasswordReset::where('token', $request->token)
+                        ->where('email', $request->email_address)
+                        ->first();
+        if(!$check_record){
+            return response()->json([
+                'error' => 'No password reset record found. Please try to request a new password reset in the forgot password page.'
+            ], 403);
+        }
+
+        $delete_record = PasswordReset::where('token', $request->token)
+                        ->where('email', $request->email_address)
+                        ->delete();
+
+
+        $user_info = User::where('email', $request->email_address)->first();
+        $user_info->password = bcrypt($request->new_password);
+        $user_info->save();
+
+        return response()->json([
+            'action' => 'reset-password',
+        ]);
     }
 }

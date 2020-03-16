@@ -4037,6 +4037,12 @@ __webpack_require__.r(__webpack_exports__);
       }
     };
   },
+  created: function created() {
+    this.$store.dispatch('pageLoader', {
+      display: false,
+      message: ''
+    });
+  },
   methods: {
     submit: function submit() {
       var _this = this;
@@ -4289,18 +4295,72 @@ __webpack_require__.r(__webpack_exports__);
         email_address: '',
         new_password: '',
         confirm_new_password: '',
-        token: '',
-        submitting: false
+        token: ''
+      },
+      api_validators: {
+        email_address: '',
+        new_password: '',
+        confirm_new_password: '',
+        token: ''
       }
     };
   },
   created: function created() {
     this.form.token = this.$route.params.token;
-    console.log("FORM VALUES: ", this.form);
+    this.$store.dispatch('pageLoader', {
+      display: false,
+      message: ''
+    });
   },
   methods: {
     submit: function submit() {
-      this.submitting = true;
+      var _this = this;
+
+      this.$store.dispatch('pageLoader', {
+        display: true,
+        message: 'Resetting password. Please wait...'
+      });
+      this.clearApiValidator();
+      this.$axios.post('/api/reset-password', this.form).then(function (response) {
+        _this.$message({
+          message: "Account's password successfully changed.",
+          showClose: true,
+          type: 'success'
+        });
+
+        _this.$router.push({
+          name: 'login_page'
+        });
+
+        _this.$store.dispatch('pageLoader', {
+          display: false,
+          message: ''
+        });
+      })["catch"](function (error) {
+        if (error.response.status == 422) {
+          for (var key in error.response.data.errors) {
+            _this.api_validators[key] = error.response.data.errors[key][0];
+          }
+        }
+
+        if (error.response.status == 403) {
+          _this.$message({
+            message: error.response.data.error,
+            showClose: true,
+            type: 'danger'
+          });
+        }
+
+        _this.$store.dispatch('pageLoader', {
+          display: false,
+          message: ''
+        });
+      });
+    },
+    clearApiValidator: function clearApiValidator() {
+      for (var key in this.api_validators) {
+        this.api_validators[key] = '';
+      }
     }
   }
 });
@@ -93378,9 +93438,11 @@ var render = function() {
               }
             }),
             _vm._v(" "),
-            _vm._m(1),
+            _c("p", { staticClass: "text-danger" }, [
+              _c("small", [_vm._v(_vm._s(_vm.api_validators.email_address))])
+            ]),
             _vm._v(" "),
-            _vm._m(2),
+            _vm._m(1),
             _vm._v(" "),
             _c("el-input", {
               attrs: {
@@ -93398,9 +93460,11 @@ var render = function() {
               }
             }),
             _vm._v(" "),
-            _vm._m(3),
+            _c("p", { staticClass: "text-danger" }, [
+              _c("small", [_vm._v(_vm._s(_vm.api_validators.new_password))])
+            ]),
             _vm._v(" "),
-            _vm._m(4),
+            _vm._m(2),
             _vm._v(" "),
             _c("el-input", {
               attrs: {
@@ -93418,7 +93482,11 @@ var render = function() {
               }
             }),
             _vm._v(" "),
-            _vm._m(5),
+            _c("p", { staticClass: "text-danger" }, [
+              _c("small", [
+                _vm._v(_vm._s(_vm.api_validators.confirm_new_password))
+              ])
+            ]),
             _vm._v(" "),
             _c("div", { staticClass: "mt-5" }, [
               _c("hr"),
@@ -93433,8 +93501,7 @@ var render = function() {
                       attrs: {
                         type: "success",
                         "native-type": "submit",
-                        size: "small",
-                        disabled: _vm.form.submitting
+                        size: "small"
                       }
                     },
                     [
@@ -93466,12 +93533,6 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("p", { staticClass: "text-right" }, [_c("small")])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
     return _c("label", { staticClass: "input-label" }, [
       _c("small", [_vm._v("New Password")])
     ])
@@ -93480,21 +93541,9 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("p", { staticClass: "text-right" }, [_c("small")])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
     return _c("label", { staticClass: "input-label" }, [
       _c("small", [_vm._v("Confirm New Password")])
     ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("p", { staticClass: "text-right" }, [_c("small")])
   }
 ]
 render._withStripped = true

@@ -51,7 +51,9 @@
 				}
 			}
 		},
-
+		created(){
+			this.$store.dispatch('pageLoader', { display: false, message: '' });
+		},
 		methods: {
 			submit(){
 				this.$store.dispatch('pageLoader', { display: true, message: 'Sending Reset Link, Please Wait...' });

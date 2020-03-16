@@ -19,7 +19,7 @@ use Illuminate\Http\Request;
 // |--------------------------------------------------------------------------
 	Route::post('login', 'AuthController@create');
 	Route::post('forgot-password', 'AuthController@create');
-	Route::post('reset-password', 'AuthController@update');
+	Route::post('reset-password', 'AuthController@reset');
 	Route::group(['middleware' => ['auth:api']], function (){ 
 		Route::get('fetch-auth-info', 'AuthController@index');
 		Route::post('update-account', 'AuthController@update');
