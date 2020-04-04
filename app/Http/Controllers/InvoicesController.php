@@ -63,6 +63,13 @@ class InvoicesController extends Controller
     							->where('id', $request->invoice_id)
     							->first();
 
+        $new_log = \App\Log::createLog([
+            'action' => 'void_invoice',
+            'invoice_id' => $request->invoice_id,
+            'user_id' => auth()->user()->id,
+            'message' => ':user voided an invoice with an ID of <strong>'.$request->invoice_id.'</strong>'
+        ]);
+
     	return response()->json([
     		'action' => 'invoice',
     		'request' => $request->all(),

@@ -122,6 +122,16 @@ const router = new VueRouter({
 				page_title: 'Medical Records'
 			}
 		},
+		{
+			path: '/dashboard/logs',
+			component: require('./pages/dashboard/logs/index.vue').default,
+			name: 'log_records',
+			meta: {
+				layout: 'dashboard',
+				authorized_users: ['admin', 'assistant'],
+				page_title: 'Logs'
+			}
+		},
 		// -------------------------------------------------------------------------
 	]
 });

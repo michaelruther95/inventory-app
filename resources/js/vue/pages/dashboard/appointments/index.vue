@@ -30,14 +30,21 @@
 
 				<div>
 					<div>
+						<div class="my-4 row m-0">
+							<div class="col-lg-4 px-0">
+								<el-date-picker v-model="date_filter" placeholder="Select Date & Time Here..." size="small"></el-date-picker>
+							</div>
+						</div>
+
+						{{ date_filter_formatted }}
+
+
 						<el-table
 							:row-class-name="tableRowClassName"
 							:data="appointments.filter(
-								data => !table_search || 
-								(
-									data.patient.toLowerCase().includes(table_search.toLowerCase()) || 
-									data.status.toLowerCase().includes(table_search.toLowerCase())
-								)
+								data =>
+								(data.appointment_date.includes(date_filter_formatted)) &&
+								(data.patient.toLowerCase().includes(table_search.toLowerCase()))
 							)"
 							style="width: 100%"
 						>
@@ -48,7 +55,7 @@
 								width="250"
 							>
 								<template slot-scope="scope">
-							        <span>{{ scope.row.appointment_date | moment('MMMM Do YYYY, h:mm A') }}</span>
+							        <span>{{ scope.row.appointment_date | moment('MMMM Do YYYY, h:mm A') }} - {{ scope.row.appointment_date }} = {{ scope.row.appointment_date.includes(date_filter_formatted) }}</span>
 							    </template>
 							</el-table-column>
 							<el-table-column
@@ -191,8 +198,23 @@
 </style>
 <script type="text/javascript">
 	export default {
+		watch: {
+			date_filter(val){
+				if(val){
+					let new_value = this.$elementHelper.formatDate(val);
+					new_value = new_value.split(" ");
+					this.date_filter_formatted = new_value[0];
+				}
+				else{
+					this.date_filter_formatted = '';
+				}
+			}
+		},
 		data(){
 			return {
+				date_filter: '',
+				date_filter_formatted: '',
+
 				submit_findings: false,
 				disease_list: [],
 

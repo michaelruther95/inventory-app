@@ -38,15 +38,18 @@
 						</template>
 					</el-table-column>
 					<el-table-column
-						label="Generic Name"
-						prop="generic_name"
+						label="Expiry Status"
+						prop="is_near_to_expire"
+						width="250"
 					>
 						<template slot-scope="scope">
-							<span v-if="scope.row.generic_name">
-								{{ scope.row.generic_name }}
-							</span>
-							<span v-else>
-								N/A
+							<span style="font-size: 10px !important;">
+								<span v-if="scope.row.is_near_to_expire" class="text-danger font-weight-bold">
+									HAS BATCHES NEAR TO EXPIRE
+								</span>
+								<span v-else class="text-success font-weight-bold">
+									NO BATCHES NEAR TO EXPIRE
+								</span>
 							</span>
 						</template>
 					</el-table-column>
@@ -55,15 +58,19 @@
 						prop="brand"
 					>
 					</el-table-column>
-					<el-table-column
+					<!-- <el-table-column
 						label="Remaining Stocks"
 						prop="total_stocks"
 					>
-					</el-table-column>
+					</el-table-column> -->
 					<el-table-column
 						label="Stocks Purchased"
 						prop="stocks_purchased"
 					>
+						<template slot-scope="scope">
+							{{ scope.row.stocks_purchased }} 
+							out of {{ scope.row.total_stocks }}
+						</template>
 					</el-table-column>
 					<el-table-column
 					align="right">
@@ -453,6 +460,7 @@
 					product_type: param.information.product_type,
 					item_name: param.information.name,
 					generic_name: param.information.generic_name,
+					is_near_to_expire: param.is_near_to_expire,
 					brand: param.information.brand,
 					total_stocks: this.addAllBatches(param),
 					stocks_purchased: this.addAllPurchases(param),
@@ -562,7 +570,8 @@
 				let stock_count = 0;
 				for(let counter = 0; counter < param.batches.length; counter++){
 					if(!param.batches[counter]['information']['is_expired']){
-						stock_count += param.batches[counter]['information']['remaining_stocks'];
+						// stock_count += param.batches[counter]['information']['remaining_stocks'];
+						stock_count += param.batches[counter]['information']['number_of_stocks'];
 					}
 				}
 

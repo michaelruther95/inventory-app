@@ -34,9 +34,9 @@ use Illuminate\Http\Request;
 // |--------------------------------------------------------------------------
 	Route::group(['middleware' => ['auth:api']], function (){ 
 		Route::get('get-patients', 'PatientsController@index');
-		Route::post('create-new-patient', 'PatientsController@create');
-		Route::post('update-patient', 'PatientsController@update');
-		Route::delete('delete-patient', 'PatientsController@delete');
+		Route::post('create-new-patient', 'PatientsController@create'); // LOG CREATED
+		Route::post('update-patient', 'PatientsController@update'); // LOG CREATED
+		Route::delete('delete-patient', 'PatientsController@delete'); // LOG CREATED
 	});
 	
 // |--------------------------------------------------------------------------
@@ -92,8 +92,8 @@ use Illuminate\Http\Request;
 // |--------------------------------------------------------------------------
 	Route::group(['middleware' => ['auth:api']], function (){ 
 		Route::get('get-products', 'ProductsController@show');
-		Route::post('create-new-product', 'ProductsController@create');
-		Route::post('update-product', 'ProductsController@update');
+		Route::post('create-new-product', 'ProductsController@create'); // LOG CREATED
+		Route::post('update-product', 'ProductsController@update'); // LOG CREATED
 		Route::post('delete-product', 'ProductsController@delete');
 	});
 // |--------------------------------------------------------------------------
@@ -104,7 +104,7 @@ use Illuminate\Http\Request;
 // | PRODUCT BATCHES ROUTES
 // |--------------------------------------------------------------------------
 	Route::group(['middleware' => ['auth:api']], function (){
-		Route::post('create-product-batch', 'ProductBatchesController@create');
+		Route::post('create-product-batch', 'ProductBatchesController@create'); // LOG CREATED
 		Route::post('update-product-batch', 'ProductBatchesController@update');
 	});
 // |--------------------------------------------------------------------------
@@ -116,7 +116,7 @@ use Illuminate\Http\Request;
 // |--------------------------------------------------------------------------
 	Route::group(['middleware' => ['auth:api']], function (){
 		Route::post('create-product-purchase', 'PurchasesController@create');
-		Route::post('purchase-multiple-product', 'MultiplePurchaseController@create');
+		Route::post('purchase-multiple-product', 'MultiplePurchaseController@create'); // LOG CREATED
 	});
 // |--------------------------------------------------------------------------
 
@@ -137,7 +137,7 @@ use Illuminate\Http\Request;
 // |--------------------------------------------------------------------------
 	Route::group(['middleware' => ['auth:api']], function(){
 		Route::get('get-invoices', 'InvoicesController@index');
-		Route::post('void-invoice', 'InvoicesController@delete');
+		Route::post('void-invoice', 'InvoicesController@delete'); // LOG CREATED
 	});
 // |--------------------------------------------------------------------------
 
@@ -167,5 +167,20 @@ use Illuminate\Http\Request;
 // |--------------------------------------------------------------------------
 	Route::group(['middleware' => ['auth:api']], function(){
 		Route::get('get-medical-records', 'MedicalRecordsController@index');
+		Route::post('generate-download-key', 'MedicalRecordsController@download');
+	});
+// |--------------------------------------------------------------------------
+
+
+// |--------------------------------------------------------------------------
+// | GET LOG RECORDS ROUTES
+// |--------------------------------------------------------------------------
+	Route::group(['middleware' => ['auth:api']], function(){
+		Route::get('get-log-records', function(){
+			$logs = App\Log::get();
+			return response()->json([
+				'logs' => $logs
+			]);
+		});
 	});
 // |--------------------------------------------------------------------------

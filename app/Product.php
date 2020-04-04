@@ -30,8 +30,46 @@ class Product extends Model
             $product->is_selected = false;
             $product->stocks_to_buy = 0;
             $product->validation_error = '';
+
+            foreach($product->batches as $product_batch){
+                $date_expiry_notif_limit = date('Y-m-d',strtotime('+30 days',strtotime(date('Y-m-d'))));
+
+                $expiry_date = date('Y-m-d', strtotime($product_batch->information['expiration_date']));
+                if($expiry_date <= $date_expiry_notif_limit){
+                    $product_batch->is_near_to_expire = true;
+                    $product->is_near_to_expire = true;
+                }
+                else{
+                    $product_batch->is_near_to_expire = false;
+                }
+            }
         }
 
         return $products;
+    }
+
+    public static function getProductInfo($product_id){
+        $product = Product::with('batches.supplierInfo', 'purchases')
+                    ->where('id', $product_id)
+                    ->first();
+
+        $product->is_selected = false;
+        $product->stocks_to_buy = 0;
+        $product->validation_error = '';
+
+        foreach($product->batches as $product_batch){
+            $date_expiry_notif_limit = date('Y-m-d',strtotime('+30 days',strtotime(date('Y-m-d'))));
+
+            $expiry_date = date('Y-m-d', strtotime($product_batch->information['expiration_date']));
+            if($expiry_date <= $date_expiry_notif_limit){
+                $product_batch->is_near_to_expire = true;
+                $product->is_near_to_expire = true;
+            }
+            else{
+                $product_batch->is_near_to_expire = false;
+            }
+        }
+
+        return $product;
     }
 }

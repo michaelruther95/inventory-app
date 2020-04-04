@@ -139,6 +139,10 @@
 			</div>
 			
 			<span slot="footer" class="dialog-footer">
+				<el-button @click="download(selected_record.raw_info)" type="primary" size="small">
+					Download Record
+				</el-button>
+
 				<el-button @click="show_record_modal = false; selected_record = null;" type="danger" size="small">
 					Close
 				</el-button>
@@ -182,6 +186,22 @@
 				console.log("ERROR: ", error);
 				this.$store.dispatch('pageLoader', { display: false, message: '' });
 			});
+		},
+		methods: {
+			download(data){
+				// alert(window.location.origin);
+
+				console.log("DATA TO DOWNLOAD: ", data);
+				this.$axios.post('/api/generate-download-key', {
+					create_download_key: true,
+					record_type: 'pet_record',
+					record_id: data.id
+				}).then((response) => {
+					window.open(window.location.origin + '/download-medical-record/' + response.data.download_key, "_blank"); 
+				}).catch((error) => {
+
+				});
+			}
 		}
 	}
 </script>

@@ -13,36 +13,42 @@ use App\Product;
 class ProductBatchesController extends Controller
 {
 	public function create(ProductBatchRequest $request){
-                $product_batch = new ProductBatch();
-                $product_batch->product_id = $request->product_id;
-                $product_batch->information = [
-                	'number_of_stocks' => (int)$request->number_of_stocks,
-                	'stocks_purchased' => 0,
-                	'expiration_date' => date('Y-m-d', strtotime($request->expiration_date)),
-                	'supplier' => $request->supplier,
-                	'delivery_date' => date('Y-m-d', strtotime($request->delivery_date)),
-                        'is_still_available' => true
-                ];
-                $product_batch->supplier_id = $request->supplier;
-                $product_batch->save();
+        $product_batch = new ProductBatch();
+        $product_batch->product_id = $request->product_id;
+        $product_batch->information = [
+        	'number_of_stocks' => (int)$request->number_of_stocks,
+        	'stocks_purchased' => 0,
+        	'expiration_date' => date('Y-m-d', strtotime($request->expiration_date)),
+        	'supplier' => $request->supplier,
+        	'delivery_date' => date('Y-m-d', strtotime($request->delivery_date)),
+                'is_still_available' => true
+        ];
+        $product_batch->supplier_id = $request->supplier;
+        $product_batch->save();
 
-                $check_product_suppliers_existence = ProductSupplier::where('product_id', $request->product_id)
-                                                        ->where('supplier_id', $request->supplier)
-                                                        ->first();
-                if(!$check_product_suppliers_existence){
-                        $new_product_supplier = new ProductSupplier();
-                        $new_product_supplier->product_id = $request->product_id;
-                        $new_product_supplier->supplier_id = $request->supplier;
-                        $new_product_supplier->save();
-                }
+        $check_product_suppliers_existence = ProductSupplier::where('product_id', $request->product_id)
+                                                ->where('supplier_id', $request->supplier)
+                                                ->first();
+        if(!$check_product_suppliers_existence){
+                $new_product_supplier = new ProductSupplier();
+                $new_product_supplier->product_id = $request->product_id;
+                $new_product_supplier->supplier_id = $request->supplier;
+                $new_product_supplier->save();
+        }
 
-                $product = Product::with('batches')
-                			->where('id', $request->product_id)
-                			->first();
+        $product = Product::getProductInfo($request->product_id);
 
-                return response()->json([
-                	'product' => $product
-                ]);
+        $new_log = \App\Log::createLog([
+            'action' => 'product_restock',
+            'product_id' => $product->id,
+            'user_id' => auth()->user()->id,
+            'message' => ':user add a new batch to a product named :product_name',
+            'record_info' => json_encode($product) 
+        ]);
+
+        return response()->json([
+        	'product' => $product
+        ]);
 	}
 
 	public function update(ProductBatchRequest $request){

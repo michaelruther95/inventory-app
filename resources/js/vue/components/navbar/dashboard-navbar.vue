@@ -122,6 +122,11 @@
 						label: 'Medical Records',
 						route_name: 'medical_records',
 						allowed_types: ['doctor', 'employee']
+					},
+					{
+						label: 'Log Records',
+						route_name: 'log_records',
+						allowed_types: ['doctor', 'employee']
 					}
 				]
 			}

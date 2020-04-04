@@ -52,6 +52,7 @@
 			</el-tab-pane>
 			<el-tab-pane label="Restocking History" name="restocking_history">
 				<el-table
+					:row-class-name="tableRowClassName"
 					:data="restocking_history"
 					style="width: 100%"
 				>
@@ -121,11 +122,30 @@
 					'stocks_date_received': this.record.raw_info.batches[counter]['created_at'],
 					'stocks_added': this.record.raw_info.batches[counter]['information']['number_of_stocks'],
 					'supplier': this.record.raw_info.batches[counter]['supplier_info']['information']['supplier_name'],
-					'expiration_date': this.record.raw_info.batches[counter]['information']['expiration_date']
+					'expiration_date': this.record.raw_info.batches[counter]['information']['expiration_date'],
+					'raw_info': this.record.raw_info.batches[counter]
 				};
 
 				this.restocking_history.push(new_batch_object);
 			}
+		},
+		methods: {
+			tableRowClassName({row, rowIndex}){
+				console.log("ROW: ", row.raw_info.is_near_to_expire);
+
+				if(row.raw_info.is_near_to_expire){
+					return 'nullify-el-hover bg-opacity-danger';
+				}
+
+				// if(row.total_stocks < 20 && row.total_stocks > 0){
+				// 	return 'nullify-el-hover bg-opacity-warning';
+				// }
+				// if(row.total_stocks <= 0){
+				// 	return 'nullify-el-hover bg-opacity-danger';
+				// }
+
+				return '';
+			},
 		}
 	}
 </script>

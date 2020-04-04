@@ -11,6 +11,8 @@
 |
 */
 
+Route::get('download-medical-record/{download_key}', 'MedicalRecordsController@download');
+
 Route::get('{path}', function () {
     return view('base');
 })->where('path', '(.*)');

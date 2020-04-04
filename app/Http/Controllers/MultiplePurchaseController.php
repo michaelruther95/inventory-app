@@ -202,6 +202,19 @@ class MultiplePurchaseController extends Controller
 
 		$products = Product::getAllProducts();
 
+
+		$invoice_information = Invoice::with('invoicePurchases.purchaseInfo.itemInfo')
+								->where('id', $new_invoice->id)
+								->first();
+
+		$new_log = \App\Log::createLog([
+            'action' => 'create_purchase',
+            'invoice_id' => $new_invoice->id,
+            'user_id' => auth()->user()->id,
+            'message' => ':user created a new purchase with an invoice ID of :invoice_id',
+            'record_info' => json_encode($invoice_information)
+        ]);
+
 		return response()->json([
 			'action' => 'create-multiple-purchase-product',
 			'request' => $request->all(),
