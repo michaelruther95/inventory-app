@@ -29,10 +29,11 @@
 					<h5>No Data To Display...</h5>
 				</div>
 				<div v-else>
-					<div v-for="(data, data_index) in data_to_display">
-						<div class="d-block px-3 py-2 mb-3 text-white rounded" :style="'width: '+ data.percentage + '% !important; background: '+ data.bg_color +' !important;'">
+					<div class="mb-4" v-for="(data, data_index) in data_to_display">
+						<label class="d-block" style="font-size: 14px;">
 							{{ data.name | capitalize }} - {{ data.value }} Stock(s) Purchased
-						</div>
+						</label>
+						<div class="d-block px-3 py-2 mb-3 text-white rounded" :style="'width: '+ data.percentage + '% !important; background: '+ data.bg_color +' !important; height: 10px; opacity: 0.8;'"></div>
 					</div>
 				</div>
 			</div>

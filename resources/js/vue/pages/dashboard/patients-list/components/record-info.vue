@@ -67,10 +67,8 @@
 												</div>
 												<div>
 													<span class="d-block"><strong>Doctor's Findings:</strong></span>
-													<span>
-														<span v-if="pet_appointment.information.findings">{{ pet_appointment.information.findings }}</span>
-														<span v-else>No Findings Record Available...</span>
-													</span>
+													<div v-if="pet_appointment.information.findings" v-html="pet_appointment.information.findings"></div>
+													<div v-else>No Findings Record Available...</div>
 													<hr>
 												</div>
 											</div>

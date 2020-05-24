@@ -84,7 +84,7 @@
 
 				navbar_items: [
 					{
-						label: 'Home',
+						label: 'Dashboard',
 						route_name: 'dashboard_home',
 						allowed_types: ['doctor', 'employee']
 					},
